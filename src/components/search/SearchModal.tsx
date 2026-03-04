@@ -266,9 +266,8 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
     <div
       ref={overlayRef}
       className="fixed inset-0 z-50 flex items-start justify-center pt-[12vh] sm:pt-[16vh] px-4"
-      onClick={e => { if (e.target === overlayRef.current) onClose() }}
     >
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
 
       <div className="relative w-full max-w-[600px] bg-bg-secondary border border-border shadow-2xl flex flex-col overflow-hidden max-h-[70vh]">
         {/* Search input */}
