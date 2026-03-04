@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { RiTimeLine, RiCheckLine, RiArrowLeftSLine, RiArrowRightSLine, RiVideoLine, RiAlertLine, RiCalendarLine, RiInformationLine, RiCloseLine, RiFileTextLine } from '@remixicon/react'
+import { RiTimeLine, RiCheckLine, RiVideoLine, RiAlertLine, RiCalendarLine, RiInformationLine, RiCloseLine, RiFileTextLine } from '@remixicon/react'
 import { PageShell } from '@/components/layout/PageShell'
 import { Avatar } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
@@ -165,7 +165,7 @@ export default function ApplicationTrackerPage() {
     setReadMessages(new Set(messages.map(m => m.id)))
   }
 
-  const handleMessageAction = (msgId: string, actionLabel: string) => {
+  const handleMessageAction = (msgId: string, _actionLabel: string) => {
     setCompletedActions(prev => new Set(prev).add(msgId))
     setReadMessages(prev => new Set(prev).add(msgId))
   }

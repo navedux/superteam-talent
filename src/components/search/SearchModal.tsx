@@ -8,14 +8,11 @@ import {
   RiBookOpenLine,
   RiCompassLine,
   RiFileTextLine,
-  RiTimeLine,
   RiCornerDownLeftLine,
   RiArrowUpLine,
   RiArrowDownLine,
   RiHomeLine,
   RiUser3Line,
-  RiMapPinLine,
-  RiMoneyDollarCircleLine,
   RiHistoryLine,
   RiDeleteBinLine,
 } from '@remixicon/react'
@@ -305,7 +302,7 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
               <div className="px-3 py-2">
                 <span className="text-[11px] font-medium text-text-muted uppercase tracking-wider">Quick Navigation</span>
               </div>
-              {PAGES.map((page, i) => (
+              {PAGES.map((page) => (
                 <QuickLinkItem
                   key={page.id}
                   result={page}

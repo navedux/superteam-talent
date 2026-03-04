@@ -1,8 +1,8 @@
-import type { ReactNode, ComponentType } from 'react'
+import type { ComponentType } from 'react'
 import { Button } from '@/components/ui/Button'
 
 interface EmptyStateProps {
-  icon: ComponentType<{ size: number; className?: string }>
+  icon: ComponentType<any>
   message: string
   actionLabel?: string
   onAction?: () => void

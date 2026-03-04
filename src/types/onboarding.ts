@@ -43,6 +43,7 @@ export interface OnboardingData {
   marketStatus: MarketStatusData
   contributions: ContributionsData
   community: CommunityData
+  [key: string]: unknown
 }
 
 export interface StepConfig {

@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react'
-import { RiArrowLeftSLine, RiArrowRightSLine, RiMapPinLine, RiMoneyDollarCircleLine, RiTimeLine, RiBookmarkLine, RiEyeOffLine, RiBriefcaseLine, RiFileCopyLine, RiCheckLine } from '@remixicon/react'
+import { RiArrowLeftSLine, RiArrowRightSLine, RiMapPinLine, RiMoneyDollarCircleLine, RiTimeLine, RiBookmarkLine, RiEyeOffLine, RiBriefcaseLine, RiCheckLine } from '@remixicon/react'
 import { PageShell } from '@/components/layout/PageShell'
 import { Avatar } from '@/components/ui/Avatar'
 import { Badge } from '@/components/ui/Badge'

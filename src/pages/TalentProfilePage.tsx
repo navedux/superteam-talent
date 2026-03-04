@@ -9,7 +9,6 @@ import {
   RiTelegramLine,
   RiFileTextLine,
   RiDownloadLine,
-  RiCheckboxCircleLine,
   RiAddLine,
   RiImageLine,
   RiPencilLine,
@@ -87,9 +86,6 @@ export default function TalentProfilePage() {
     setPortfolio(prev => prev.filter(p => p.id !== id))
   }
 
-  const removeRole = (role: string) => setDesiredRoles(prev => prev.filter(r => r !== role))
-  const removeCommunity = (c: string) => setCommunities(prev => prev.filter(x => x !== c))
-
   const profileCompletion = 70
 
   return (
@@ -146,7 +142,7 @@ export default function TalentProfilePage() {
 
             {/* Current Role */}
             <div className="flex items-center gap-2 bg-bg-secondary px-3 py-2 w-fit">
-              <Avatar name="NodeOps" size="xs" />
+              <Avatar name="NodeOps" size="sm" />
               <span className="text-sm text-text-primary">{roleTitle}</span>
               <span className="text-xs text-text-muted">@ NodeOps</span>
             </div>

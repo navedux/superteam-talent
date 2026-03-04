@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router'
+import { Agentation } from 'agentation'
 import { AuthProvider, useAuth } from '@/context/AuthContext'
 import LoginPage from '@/pages/LoginPage'
 import OnboardingPage from '@/pages/OnboardingPage'
@@ -70,6 +71,7 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <AppRoutes />
+        <Agentation />
       </AuthProvider>
     </BrowserRouter>
   )
