@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+@theme {
+  /* Colors */
+  --color-bg-primary: #000000;
+  --color-bg-secondary: #151515;
+  --color-bg-card: #262626;
+  --color-bg-input: #171717;
+  --color-bg-elevated: #1c1c1c;
+  --color-border: #262626;
+  --color-brand: #ff3317;
+  --color-brand-hover: #e62d13;
+  --color-brand-muted: #ff33171a;
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #a3a3a3;
+  --color-text-muted: #7b7b7b;
+  --color-error: #e93544;
+  --color-success: #22c55e;
+
+  /* Typography */
+  --font-heading: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+
+  /* Shadows */
+  --shadow-input: 0 1px 1.75px #0a0d1408;
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+  /* Animations */
+  --animate-fade-in: fade-in 0.2s ease-out;
+  --animate-slide-up: slide-up 0.3s ease-out;
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes slide-up {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+
+@layer base {
+  html {
+    font-family: var(--font-body);
+    color: var(--color-text-primary);
+    background-color: var(--color-bg-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-heading);
+  }
+
+  input, select, textarea {
+    font-family: var(--font-body);
+  }
+
+  ::selection {
+    background-color: var(--color-brand);
+    color: white;
+  }
+
+  /* Hide scrollbars globally while keeping scroll functionality */
+  * {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+  }
+  *::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+}
