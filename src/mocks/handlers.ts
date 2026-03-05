@@ -7,10 +7,7 @@ export const handlers = [
   http.post('/api/auth/login', async ({ request }) => {
     await delay(300)
     const body = (await request.json()) as { email: string; password: string }
-    if (body.email && body.password) {
-      return HttpResponse.json({ user: mockUser, token: 'mock-jwt-token' })
-    }
-    return HttpResponse.json({ error: 'Invalid credentials' }, { status: 401 })
+    return HttpResponse.json({ user: mockUser, token: 'mock-jwt-token' })
   }),
 
   http.get('/api/profile', async () => {

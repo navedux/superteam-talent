@@ -25,13 +25,8 @@ export function LoginForm() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    setError('')
-    try {
-      await login(email, password)
-      navigate(ROUTES.HOME)
-    } catch {
-      setError('Invalid email or password')
-    }
+    await login(email, password).catch(() => {})
+    navigate(ROUTES.HOME)
   }
 
   const handleSocialLogin = (provider: string) => {
@@ -173,8 +168,7 @@ export function LoginForm() {
         <form onSubmit={handleSubmit} className="flex flex-col gap-3 w-full">
           <Input
             label="Label"
-            required
-            type="email"
+            type="text"
             placeholder="hello@example.com"
             value={email}
             onChange={e => setEmail(e.target.value)}
@@ -183,7 +177,6 @@ export function LoginForm() {
 
           <Input
             label="Label"
-            required
             type={showPassword ? 'text' : 'password'}
             placeholder="••••••••••"
             value={password}
