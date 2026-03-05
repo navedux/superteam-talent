@@ -4,9 +4,8 @@ import { mockJobs } from './data/jobs'
 import { mockNotifications } from './data/notifications'
 
 export const handlers = [
-  http.post('/api/auth/login', async ({ request }) => {
+  http.post('/api/auth/login', async () => {
     await delay(300)
-    const body = (await request.json()) as { email: string; password: string }
     return HttpResponse.json({ user: mockUser, token: 'mock-jwt-token' })
   }),
 

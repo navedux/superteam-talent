@@ -19,7 +19,7 @@ export function LoginForm() {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [keepLoggedIn, setKeepLoggedIn] = useState(false)
-  const [error, setError] = useState('')
+  const [error] = useState('')
   const [toast, setToast] = useState('')
   const [forgotEmail, setForgotEmail] = useState('')
 
