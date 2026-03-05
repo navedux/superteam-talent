@@ -33,7 +33,7 @@ const mockArticles: Article[] = [
     readTime: '5 min',
     views: '2.4k',
     date: 'Jan 15, 2026',
-    url: 'https://superteam.fun/blog/building-proof-of-work',
+    url: 'https://talent.superteam.fun/blog/building-proof-of-work',
     featured: true,
   },
   {
@@ -44,7 +44,7 @@ const mockArticles: Article[] = [
     readTime: '6 min',
     views: '1.8k',
     date: 'Jan 12, 2026',
-    url: 'https://superteam.fun/blog/growing-twitter-audience',
+    url: 'https://talent.superteam.fun/blog/growing-twitter-audience',
     comments: '12',
   },
   {
@@ -55,7 +55,7 @@ const mockArticles: Article[] = [
     readTime: '8 min',
     views: '3.1k',
     date: 'Jan 10, 2026',
-    url: 'https://superteam.fun/blog/blockchain-developer-career',
+    url: 'https://talent.superteam.fun/blog/blockchain-developer-career',
     comments: '8',
   },
   {
@@ -66,7 +66,7 @@ const mockArticles: Article[] = [
     readTime: '5 min',
     views: '4.2k',
     date: 'Jan 8, 2026',
-    url: 'https://superteam.fun/blog/great-cv-guide',
+    url: 'https://talent.superteam.fun/blog/great-cv-guide',
     comments: '15',
   },
   {
@@ -77,7 +77,7 @@ const mockArticles: Article[] = [
     readTime: '4 min',
     views: '2.1k',
     date: 'Jan 5, 2026',
-    url: 'https://superteam.fun/blog/github-for-developers',
+    url: 'https://talent.superteam.fun/blog/github-for-developers',
     comments: '6',
   },
   {
@@ -88,7 +88,7 @@ const mockArticles: Article[] = [
     readTime: '7 min',
     views: '5.7k',
     date: 'Jan 3, 2026',
-    url: 'https://superteam.fun/blog/interview-preparation',
+    url: 'https://talent.superteam.fun/blog/interview-preparation',
     comments: '20',
   },
   {
@@ -99,7 +99,7 @@ const mockArticles: Article[] = [
     readTime: '6 min',
     views: '3.5k',
     date: 'Dec 28, 2025',
-    url: 'https://superteam.fun/blog/interview-questions',
+    url: 'https://talent.superteam.fun/blog/interview-questions',
     comments: '9',
   },
   {
@@ -110,7 +110,7 @@ const mockArticles: Article[] = [
     readTime: '10 min',
     views: '2.9k',
     date: 'Dec 22, 2025',
-    url: 'https://superteam.fun/blog/machine-coding-interview',
+    url: 'https://talent.superteam.fun/blog/machine-coding-interview',
     comments: '11',
   },
   {
@@ -121,7 +121,7 @@ const mockArticles: Article[] = [
     readTime: '5 min',
     views: '4.8k',
     date: 'Dec 18, 2025',
-    url: 'https://superteam.fun/blog/salary-negotiation',
+    url: 'https://talent.superteam.fun/blog/salary-negotiation',
     comments: '14',
   },
   {
@@ -132,7 +132,7 @@ const mockArticles: Article[] = [
     readTime: '8 min',
     views: '6.2k',
     date: 'Dec 15, 2025',
-    url: 'https://superteam.fun/blog/web3-salary-guide',
+    url: 'https://talent.superteam.fun/blog/web3-salary-guide',
     comments: '18',
   },
   {
@@ -143,7 +143,7 @@ const mockArticles: Article[] = [
     readTime: '7 min',
     views: '3.3k',
     date: 'Dec 10, 2025',
-    url: 'https://superteam.fun/blog/token-compensation',
+    url: 'https://talent.superteam.fun/blog/token-compensation',
     comments: '7',
   },
 ]

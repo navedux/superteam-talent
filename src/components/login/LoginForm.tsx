@@ -167,7 +167,7 @@ export function LoginForm() {
         {/* Form Fields - 12px gap between email and password */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-3 w-full">
           <Input
-            label="Label"
+            label="Email"
             type="text"
             placeholder="hello@example.com"
             value={email}
@@ -176,7 +176,7 @@ export function LoginForm() {
           />
 
           <Input
-            label="Label"
+            label="Password"
             type={showPassword ? 'text' : 'password'}
             placeholder="••••••••••"
             value={password}

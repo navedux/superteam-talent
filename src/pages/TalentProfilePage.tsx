@@ -17,6 +17,7 @@ import {
   RiDeleteBinLine,
   RiExternalLinkLine,
   RiArrowDownSLine,
+  RiLockLine,
 } from '@remixicon/react'
 import { PageShell } from '@/components/layout/PageShell'
 import { Avatar } from '@/components/ui/Avatar'
@@ -26,8 +27,70 @@ import { ProgressBar } from '@/components/ui/ProgressBar'
 import { useAuth } from '@/context/AuthContext'
 
 const JOB_STATUS_OPTIONS = ['Actively Looking', 'Open to new jobs', 'Not looking', 'Casually browsing']
+
+const statusBadgeVariant = (status: string): 'success' | 'brand' | 'error' | 'default' => {
+  switch (status) {
+    case 'Actively Looking': return 'success'
+    case 'Open to new jobs': return 'brand'
+    case 'Not looking': return 'error'
+    case 'Casually browsing': return 'default'
+    default: return 'default'
+  }
+}
 const OPEN_FOR_OPTIONS = ['Full-Time Roles', 'Part-Time Roles', 'Freelance / Contract', 'Internships']
-const LOCATION_OPTIONS = ['San Francisco, CA', 'Bangalore, India', 'Remote', 'New York, USA', 'London, UK', 'Singapore']
+const LOCATION_OPTIONS = [
+  'Remote',
+  'San Francisco, CA', 'New York, USA', 'Austin, TX', 'Los Angeles, CA', 'Miami, FL', 'Chicago, IL', 'Seattle, WA', 'Denver, CO', 'Boston, MA',
+  'London, UK', 'Berlin, Germany', 'Paris, France', 'Amsterdam, Netherlands', 'Lisbon, Portugal', 'Zurich, Switzerland', 'Dublin, Ireland',
+  'Bangalore, India', 'Mumbai, India', 'Delhi, India', 'Hyderabad, India',
+  'Singapore', 'Hong Kong', 'Tokyo, Japan', 'Seoul, South Korea', 'Dubai, UAE', 'Tel Aviv, Israel',
+  'Sydney, Australia', 'Melbourne, Australia',
+  'Toronto, Canada', 'Vancouver, Canada',
+  'São Paulo, Brazil', 'Buenos Aires, Argentina', 'Mexico City, Mexico',
+  'Lagos, Nigeria', 'Nairobi, Kenya', 'Cape Town, South Africa',
+]
+const COMPENSATION_OPTIONS = [
+  '$50k – $80k / year',
+  '$80k – $120k / year',
+  '$120k – $170k / year',
+  '$170k – $210k / year',
+  '$210k – $300k / year',
+  '$300k+ / year',
+]
+
+/* ─── Default Profile Data ───
+   Update these values to change what shows on the profile.
+   They also serve as initial values before user edits. */
+const PROFILE_DEFAULTS = {
+  bio: 'Designer who Builds | Couch Potato @NodeOpsHQ | Contributor @SuperteamTalent',
+  roleTitle: 'Design Engineer',
+  company: 'NodeOps',
+  availability: 'Actively Looking',
+  openFor: 'Full-Time Roles',
+  location: 'San Francisco, CA',
+  compensation: '$170k – $210k / year',
+  desiredRoles: ['Product Design', 'UX Research', 'Design Systems'],
+  communities: ['Superteam', 'Solana Collective', 'Design DAO'],
+  proudestContribution: 'DeFi Protocol Dashboard',
+  contributionDetail: 'Open source contribution',
+  socials: [
+    { icon: 'github' as const, label: 'GitHub', value: 'navedalam', url: 'https://github.com/navedalam' },
+    { icon: 'linkedin' as const, label: 'LinkedIn', value: 'navedalam', url: 'https://linkedin.com/in/navedalam' },
+    { icon: 'medium' as const, label: 'Medium', value: '@navedalam', url: 'https://medium.com/@navedalam' },
+    { icon: 'telegram' as const, label: 'Telegram', value: '@navedalam', url: 'https://t.me/navedalam' },
+  ],
+  references: [
+    { name: 'Alex Chen', role: 'Engineering Lead at Helius' },
+    { name: 'Sarah Kim', role: 'Product Manager at Jupiter' },
+  ],
+}
+
+const SOCIAL_ICONS = {
+  github: RiGithubLine,
+  linkedin: RiLinkedinBoxLine,
+  medium: RiMediumLine,
+  telegram: RiTelegramLine,
+} as const
 
 interface SocialLink {
   icon: typeof RiGithubLine
@@ -44,26 +107,26 @@ interface PortfolioItem {
 export default function TalentProfilePage() {
   const { user } = useAuth()
 
-  // Profile state
-  const [bio, setBio] = useState('Designer who Builds | Couch Potato @NodeOpsHQ | Contributor @SuperteamTalent')
-  const [location, setLocation] = useState('San Francisco, CA')
-  const [roleTitle, setRoleTitle] = useState('Design Engineer')
-  const [availability, setAvailability] = useState('Actively Looking')
-  const [openFor, setOpenFor] = useState('Full-Time Roles')
-  const [compensation, setCompensation] = useState('$170k – $210k / year')
+  // Profile state — seeded from PROFILE_DEFAULTS (edit the object above to change defaults)
+  const [bio, setBio] = useState(PROFILE_DEFAULTS.bio)
+  const [location, setLocation] = useState(PROFILE_DEFAULTS.location)
+  const [roleTitle, setRoleTitle] = useState(PROFILE_DEFAULTS.roleTitle)
+  const [availability, setAvailability] = useState(PROFILE_DEFAULTS.availability)
+  const [openFor, setOpenFor] = useState(PROFILE_DEFAULTS.openFor)
+  const [compensation, setCompensation] = useState(PROFILE_DEFAULTS.compensation)
 
-  const [socialLinks] = useState<SocialLink[]>([
-    { icon: RiGithubLine, label: 'GitHub', value: 'navedalam', url: 'https://github.com/navedalam' },
-    { icon: RiLinkedinBoxLine, label: 'LinkedIn', value: 'navedalam', url: 'https://linkedin.com/in/navedalam' },
-    { icon: RiMediumLine, label: 'Medium', value: '@navedalam', url: 'https://medium.com/@navedalam' },
-    { icon: RiTelegramLine, label: 'Telegram', value: '@navedalam', url: 'https://t.me/navedalam' },
-  ])
+  const socialLinks: SocialLink[] = PROFILE_DEFAULTS.socials.map(s => ({
+    icon: SOCIAL_ICONS[s.icon],
+    label: s.label,
+    value: s.value,
+    url: s.url,
+  }))
 
-  const [desiredRoles, setDesiredRoles] = useState(['Product Design', 'UX Research', 'Design Systems'])
-  const [communities, setCommunities] = useState(['Superteam', 'Solana Collective', 'Design DAO'])
+  const [desiredRoles, setDesiredRoles] = useState(PROFILE_DEFAULTS.desiredRoles)
+  const [communities, setCommunities] = useState(PROFILE_DEFAULTS.communities)
   const [portfolio, setPortfolio] = useState<PortfolioItem[]>([])
-  const [proudestContribution] = useState('DeFi Protocol Dashboard')
-  const [contributionDetail] = useState('Open source contribution')
+  const proudestContribution = PROFILE_DEFAULTS.proudestContribution
+  const contributionDetail = PROFILE_DEFAULTS.contributionDetail
 
   // Edit modal
   const [editOpen, setEditOpen] = useState(false)
@@ -100,69 +163,123 @@ export default function TalentProfilePage() {
 
       <div className="flex flex-col gap-6 px-4 md:px-8 pb-8">
 
-        {/* ── Profile Header Card ── */}
-        <div className="border border-border">
-          {/* Cover + Avatar */}
-          <div className="h-[100px] bg-bg-primary border-b border-border relative">
-            <div className="absolute inset-0 flex items-center justify-center gap-2 text-text-muted/40">
-              <RiImageLine size={24} />
-              <span className="text-xs font-medium">Cover Image</span>
+        {/* ── Profile Completion ── */}
+        <div className="border border-border p-5 flex flex-col gap-4">
+          {/* Top row: title + current level badge */}
+          <div className="flex items-start justify-between">
+            <div className="flex flex-col gap-1">
+              <span className="text-sm font-medium text-text-primary">Profile Completion</span>
+              <span className="text-xs text-text-muted">Complete your profile to increase visibility</span>
             </div>
-            <div className="absolute -bottom-8 left-4">
-              <Avatar name={user?.name ?? 'User'} size="xl" square className="border-4 border-bg-secondary w-16 h-16 text-lg" />
-            </div>
+            <Badge variant="brand">Eligible for Introduction</Badge>
           </div>
 
-          {/* Info */}
-          <div className="pt-12 px-4 pb-4 flex flex-col gap-3">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex flex-col gap-1 min-w-0">
-                <h1 className="text-lg font-medium text-text-primary">{user?.name ?? 'Naved Alam'}</h1>
-                <p className="text-[13px] text-text-secondary leading-relaxed">{bio}</p>
-              </div>
-              <Button variant="secondary" size="sm" onClick={() => setEditOpen(true)} className="shrink-0">
-                <RiPencilLine size={14} />
-                Edit
-              </Button>
-            </div>
+          {/* Progress bar with percentage */}
+          <div className="flex items-center gap-3">
+            <ProgressBar value={profileCompletion} size="sm" className="flex-1" />
+            <span className="text-sm font-medium text-brand">{profileCompletion}%</span>
+          </div>
 
-            {/* Metadata row */}
-            <div className="flex items-center gap-4 flex-wrap text-xs text-text-secondary">
-              <Badge variant="success">{availability}</Badge>
-              <span className="flex items-center gap-1">
-                <RiMapPinLine size={12} /> {location}
+          {/* Level steps */}
+          <div className="grid grid-cols-3 gap-2">
+            {/* Level 1 — completed */}
+            <div className="flex items-center gap-2 px-3 py-2 bg-brand/10 border border-brand/30">
+              <span className="text-xs font-medium text-brand flex-1">
+                Level 1 → Eligible for Introduction
               </span>
-              <span className="flex items-center gap-1">
-                <RiBriefcaseLine size={12} /> {openFor}
-              </span>
-              <span className="flex items-center gap-1">
-                <RiMoneyDollarCircleLine size={12} /> {compensation}
+              <RiCheckLine size={14} className="text-brand shrink-0" />
+            </div>
+            {/* Level 2 — next */}
+            <div className="flex items-center gap-2 px-3 py-2 bg-brand/5 border border-brand/20">
+              <span className="text-xs font-medium text-brand/70 flex-1">
+                Next &bull; Level 2 (80%) → Eligible for [Benefit]
               </span>
             </div>
-
-            {/* Current Role */}
-            <div className="flex items-center gap-2 bg-bg-secondary px-3 py-2 w-fit">
-              <Avatar name="NodeOps" size="sm" />
-              <span className="text-sm text-text-primary">{roleTitle}</span>
-              <span className="text-xs text-text-muted">@ NodeOps</span>
+            {/* Level 3 — locked */}
+            <div className="flex items-center gap-2 px-3 py-2 bg-bg-card border border-border">
+              <span className="text-xs text-text-muted flex-1">
+                Level 3 (100%) → Eligible for Talent Spotlight
+              </span>
+              <RiLockLine size={14} className="text-text-muted shrink-0" />
             </div>
           </div>
         </div>
 
-        {/* ── Profile Completion ── */}
-        <div className="border border-border p-4 flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-text-primary">Profile Completion</span>
-            <span className="text-sm text-text-secondary">{profileCompletion}%</span>
+        {/* ── Profile Header Card ── */}
+        <div className="flex flex-col">
+          {/* Info banner */}
+          <div className="flex items-center gap-3 px-4 py-3 mb-3 bg-brand/5 border-l-2 border-l-brand border-r-2 border-r-brand">
+            <p className="text-[13px] text-brand leading-relaxed">
+              This is your Superteam Talent profile, keep it up to date to get matched with the right teams and track your interview progress across the ecosystem.
+            </p>
           </div>
-          <ProgressBar value={profileCompletion} size="sm" />
-          <div className="flex items-center gap-4">
-            <span className="text-xs text-text-muted">
-              <span className="text-brand font-medium">Level 1</span> — Eligible for introduction
-            </span>
-            <span className="text-xs text-text-muted">
-              Next: <span className="text-text-secondary font-medium">Level 2 at 80%</span>
-            </span>
+
+          {/* Cover + Avatar */}
+          <div className="relative">
+            <div className="h-[200px] bg-bg-primary flex items-center justify-center gap-2 text-text-muted/40 border-l-2 border-l-brand border-r-2 border-r-brand">
+              <RiImageLine size={32} />
+              <span className="text-sm font-medium">Cover Image</span>
+            </div>
+            {/* Avatar */}
+            <div className="absolute -bottom-10 left-5">
+              <Avatar name={user?.name ?? 'User'} size="xl" square className="border-4 border-bg-card w-20 h-20 text-xl" />
+            </div>
+            {/* Update button */}
+            <div className="absolute bottom-0 right-5 translate-y-1/2">
+              <Button variant="secondary" size="sm" onClick={() => setEditOpen(true)}>
+                <RiPencilLine size={14} />
+                Update
+              </Button>
+            </div>
+          </div>
+
+          {/* Info */}
+          <div className="pt-14 pb-5 flex flex-col gap-3">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex flex-col gap-1 min-w-0">
+                <h1 className="text-lg font-medium text-text-primary">{user?.name ?? 'Naved Alam'}</h1>
+                <p className="text-[13px] text-text-secondary leading-relaxed">{bio}</p>
+              </div>
+
+              {/* Current Role — right aligned */}
+              <div className="flex items-center gap-3 bg-bg-secondary px-3 py-3 shrink-0">
+                <Avatar name={PROFILE_DEFAULTS.company} size="sm" square />
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-sm text-text-primary">{roleTitle}</span>
+                  <span className="text-xs text-text-muted">{PROFILE_DEFAULTS.company}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Metadata row — click any item to edit inline */}
+            <div className="flex items-center gap-3 flex-wrap text-xs text-text-secondary">
+              <InlineSelect
+                value={availability}
+                onChange={setAvailability}
+                options={JOB_STATUS_OPTIONS}
+                render={v => <Badge variant={statusBadgeVariant(v)}>{v}</Badge>}
+              />
+              <InlineSelect
+                value={location}
+                onChange={setLocation}
+                options={LOCATION_OPTIONS}
+                icon={<RiMapPinLine size={12} />}
+                searchable
+              />
+              <InlineSelect
+                value={openFor}
+                onChange={setOpenFor}
+                options={OPEN_FOR_OPTIONS}
+                icon={<RiBriefcaseLine size={12} />}
+              />
+              <InlineSelectWithCustom
+                value={compensation}
+                onChange={setCompensation}
+                options={COMPENSATION_OPTIONS}
+                icon={<RiMoneyDollarCircleLine size={12} />}
+                placeholder="e.g. $150k – $200k / year"
+              />
+            </div>
           </div>
         </div>
 
@@ -272,10 +389,7 @@ export default function TalentProfilePage() {
             {/* References */}
             <SectionCard title="References">
               <div className="flex flex-col gap-2">
-                {[
-                  { name: 'Alex Chen', role: 'Engineering Lead at Helius' },
-                  { name: 'Sarah Kim', role: 'Product Manager at Jupiter' },
-                ].map(ref => (
+                {PROFILE_DEFAULTS.references.map(ref => (
                   <div key={ref.name} className="flex items-center gap-3 p-3 bg-bg-secondary">
                     <Avatar name={ref.name} size="sm" />
                     <div className="flex-1 min-w-0">
@@ -524,6 +638,163 @@ function FieldSelect({ label, value, onChange, options }: {
         </select>
         <RiArrowDownSLine size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
       </div>
+    </div>
+  )
+}
+
+/* ─── Inline Editable Components ─── */
+
+function InlineSelect({ value, onChange, options, icon, render, searchable }: {
+  value: string
+  onChange: (v: string) => void
+  options: string[]
+  icon?: React.ReactNode
+  render?: (v: string) => React.ReactNode
+  searchable?: boolean
+}) {
+  const [open, setOpen] = useState(false)
+  const [query, setQuery] = useState('')
+  const ref = useRef<HTMLDivElement>(null)
+  const searchRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const handleClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) { setOpen(false); setQuery('') }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [open])
+
+  useEffect(() => {
+    if (open && searchable) searchRef.current?.focus()
+  }, [open, searchable])
+
+  const filtered = query
+    ? options.filter(o => o.toLowerCase().includes(query.toLowerCase()))
+    : options
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => { setOpen(!open); setQuery('') }}
+        className="flex items-center gap-1 cursor-pointer hover:text-text-primary transition-colors"
+      >
+        {render ? render(value) : <>{icon} {value}</>}
+        <RiArrowDownSLine size={12} className="text-text-muted" />
+      </button>
+      {open && (
+        <div className="absolute top-full left-0 mt-1 bg-bg-card border border-border shadow-lg z-30 min-w-[220px]">
+          {searchable && (
+            <div className="p-1.5 border-b border-border">
+              <input
+                ref={searchRef}
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                placeholder="Search..."
+                className="w-full bg-bg-input border border-border px-2 py-1.5 text-xs text-text-primary placeholder:text-text-muted outline-none focus:border-brand"
+              />
+            </div>
+          )}
+          <div className="max-h-[200px] overflow-y-auto">
+            {filtered.length === 0 ? (
+              <div className="px-3 py-2 text-xs text-text-muted">No results</div>
+            ) : (
+              filtered.map(opt => (
+                <button
+                  key={opt}
+                  onClick={() => { onChange(opt); setOpen(false); setQuery('') }}
+                  className={`w-full text-left px-3 py-2 text-xs cursor-pointer transition-colors ${opt === value ? 'text-brand bg-brand/10' : 'text-text-secondary hover:bg-bg-secondary hover:text-text-primary'}`}
+                >
+                  {opt}
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function InlineSelectWithCustom({ value, onChange, options, icon, placeholder }: {
+  value: string
+  onChange: (v: string) => void
+  options: string[]
+  icon?: React.ReactNode
+  placeholder?: string
+}) {
+  const [open, setOpen] = useState(false)
+  const [custom, setCustom] = useState(false)
+  const [draft, setDraft] = useState(value)
+  const ref = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const handleClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) { setOpen(false); setCustom(false) }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [open])
+
+  useEffect(() => {
+    if (custom) inputRef.current?.focus()
+  }, [custom])
+
+  const saveCustom = () => {
+    if (draft.trim()) onChange(draft.trim())
+    setCustom(false)
+    setOpen(false)
+  }
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-1 cursor-pointer hover:text-text-primary transition-colors"
+      >
+        {icon} {value}
+        <RiArrowDownSLine size={12} className="text-text-muted" />
+      </button>
+      {open && (
+        <div className="absolute top-full left-0 mt-1 bg-bg-card border border-border shadow-lg z-30 min-w-[200px]">
+          {options.map(opt => (
+            <button
+              key={opt}
+              onClick={() => { onChange(opt); setOpen(false); setCustom(false) }}
+              className={`w-full text-left px-3 py-2 text-xs cursor-pointer transition-colors ${opt === value ? 'text-brand bg-brand/10' : 'text-text-secondary hover:bg-bg-secondary hover:text-text-primary'}`}
+            >
+              {opt}
+            </button>
+          ))}
+          <div className="border-t border-border">
+            {custom ? (
+              <div className="flex items-center gap-1 p-2">
+                <input
+                  ref={inputRef}
+                  value={draft}
+                  onChange={e => setDraft(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') saveCustom(); if (e.key === 'Escape') { setCustom(false) } }}
+                  placeholder={placeholder}
+                  className="bg-bg-input border border-border px-2 py-1 text-xs text-text-primary outline-none focus:border-brand flex-1 min-w-0"
+                />
+                <button onClick={saveCustom} className="text-brand text-xs font-medium px-1.5 py-1 hover:bg-brand/10 cursor-pointer">
+                  Set
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => { setDraft(value); setCustom(true) }}
+                className="w-full text-left px-3 py-2 text-xs text-text-muted hover:text-brand hover:bg-bg-secondary cursor-pointer flex items-center gap-1"
+              >
+                <RiPencilLine size={10} /> Custom amount...
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

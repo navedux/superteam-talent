@@ -46,17 +46,17 @@ const PAGES: SearchResult[] = [
 
 // Playbook articles
 const ARTICLES: SearchResult[] = [
-  { id: 'art-1', type: 'article', title: 'Building Proof of Work: The Key to Breaking into Web3', subtitle: 'Pre-Application', meta: '5 min read', url: 'https://superteam.fun/blog/building-proof-of-work', external: true },
-  { id: 'art-2', type: 'article', title: 'Growing Your Twitter Audience in Web3', subtitle: 'Pre-Application', meta: '6 min read', url: 'https://superteam.fun/blog/growing-twitter-audience', external: true },
-  { id: 'art-3', type: 'article', title: 'Building a Career as a Blockchain Developer', subtitle: 'Pre-Application', meta: '8 min read', url: 'https://superteam.fun/blog/blockchain-developer-career', external: true },
-  { id: 'art-4', type: 'article', title: 'Writing a Great CV: A Guide to Standing Out', subtitle: 'Application', meta: '5 min read', url: 'https://superteam.fun/blog/great-cv-guide', external: true },
-  { id: 'art-5', type: 'article', title: 'GitHub for Job-Seeking Developers', subtitle: 'Application', meta: '4 min read', url: 'https://superteam.fun/blog/github-for-developers', external: true },
-  { id: 'art-6', type: 'article', title: 'How to Prepare for Interviews', subtitle: 'Interviews', meta: '7 min read', url: 'https://superteam.fun/blog/interview-preparation', external: true },
-  { id: 'art-7', type: 'article', title: '30 Interview Questions to Ask', subtitle: 'Interviews', meta: '6 min read', url: 'https://superteam.fun/blog/interview-questions', external: true },
-  { id: 'art-8', type: 'article', title: 'Acing the Machine Coding Interview', subtitle: 'Interviews', meta: '10 min read', url: 'https://superteam.fun/blog/machine-coding-interview', external: true },
-  { id: 'art-9', type: 'article', title: 'The 10 Commandments of Salary Negotiation', subtitle: 'Negotiations', meta: '5 min read', url: 'https://superteam.fun/blog/salary-negotiation', external: true },
-  { id: 'art-10', type: 'article', title: 'Web3 Salary Guide: Understanding Compensation', subtitle: 'Negotiations', meta: '8 min read', url: 'https://superteam.fun/blog/web3-salary-guide', external: true },
-  { id: 'art-11', type: 'article', title: 'Understanding Token Compensation in Web3', subtitle: 'Negotiations', meta: '7 min read', url: 'https://superteam.fun/blog/token-compensation', external: true },
+  { id: 'art-1', type: 'article', title: 'Building Proof of Work: The Key to Breaking into Web3', subtitle: 'Pre-Application', meta: '5 min read', url: 'https://talent.superteam.fun/blog/building-proof-of-work', external: true },
+  { id: 'art-2', type: 'article', title: 'Growing Your Twitter Audience in Web3', subtitle: 'Pre-Application', meta: '6 min read', url: 'https://talent.superteam.fun/blog/growing-twitter-audience', external: true },
+  { id: 'art-3', type: 'article', title: 'Building a Career as a Blockchain Developer', subtitle: 'Pre-Application', meta: '8 min read', url: 'https://talent.superteam.fun/blog/blockchain-developer-career', external: true },
+  { id: 'art-4', type: 'article', title: 'Writing a Great CV: A Guide to Standing Out', subtitle: 'Application', meta: '5 min read', url: 'https://talent.superteam.fun/blog/great-cv-guide', external: true },
+  { id: 'art-5', type: 'article', title: 'GitHub for Job-Seeking Developers', subtitle: 'Application', meta: '4 min read', url: 'https://talent.superteam.fun/blog/github-for-developers', external: true },
+  { id: 'art-6', type: 'article', title: 'How to Prepare for Interviews', subtitle: 'Interviews', meta: '7 min read', url: 'https://talent.superteam.fun/blog/interview-preparation', external: true },
+  { id: 'art-7', type: 'article', title: '30 Interview Questions to Ask', subtitle: 'Interviews', meta: '6 min read', url: 'https://talent.superteam.fun/blog/interview-questions', external: true },
+  { id: 'art-8', type: 'article', title: 'Acing the Machine Coding Interview', subtitle: 'Interviews', meta: '10 min read', url: 'https://talent.superteam.fun/blog/machine-coding-interview', external: true },
+  { id: 'art-9', type: 'article', title: 'The 10 Commandments of Salary Negotiation', subtitle: 'Negotiations', meta: '5 min read', url: 'https://talent.superteam.fun/blog/salary-negotiation', external: true },
+  { id: 'art-10', type: 'article', title: 'Web3 Salary Guide: Understanding Compensation', subtitle: 'Negotiations', meta: '8 min read', url: 'https://talent.superteam.fun/blog/web3-salary-guide', external: true },
+  { id: 'art-11', type: 'article', title: 'Understanding Token Compensation in Web3', subtitle: 'Negotiations', meta: '7 min read', url: 'https://talent.superteam.fun/blog/token-compensation', external: true },
 ]
 
 // Applications (static mock, same as ApplicationTrackerPage)

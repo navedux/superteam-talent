@@ -1,16 +1,23 @@
 import { NavLink, useNavigate } from 'react-router'
-import { RiHomeLine, RiBriefcaseLine, RiFileTextLine, RiBookOpenLine, RiUserLine, RiHeadphoneLine, RiLogoutBoxLine } from '@remixicon/react'
+import {
+  RiHomeLine, RiHomeFill,
+  RiBriefcaseLine, RiBriefcaseFill,
+  RiFileTextLine, RiFileTextFill,
+  RiBookOpenLine, RiBookOpenFill,
+  RiUserLine, RiUserFill,
+  RiHeadphoneLine, RiLogoutBoxLine,
+} from '@remixicon/react'
 import { cn } from '@/lib/cn'
 import { Button } from '@/components/ui/Button'
 import { ROUTES } from '@/lib/constants'
 import { useAuth } from '@/context/AuthContext'
 
 const navItems = [
-  { to: ROUTES.HOME, icon: RiHomeLine, label: 'Home' },
-  { to: ROUTES.JOBS, icon: RiBriefcaseLine, label: 'Job Board' },
-  { to: ROUTES.APPLICATIONS, icon: RiFileTextLine, label: 'Application Tracker' },
-  { to: ROUTES.PLAYBOOK, icon: RiBookOpenLine, label: 'Job Playbook' },
-  { to: ROUTES.PROFILE, icon: RiUserLine, label: 'Talent Profile' },
+  { to: ROUTES.HOME, icon: RiHomeLine, iconFill: RiHomeFill, label: 'Home' },
+  { to: ROUTES.JOBS, icon: RiBriefcaseLine, iconFill: RiBriefcaseFill, label: 'Job Board' },
+  { to: ROUTES.APPLICATIONS, icon: RiFileTextLine, iconFill: RiFileTextFill, label: 'Application Tracker' },
+  { to: ROUTES.PLAYBOOK, icon: RiBookOpenLine, iconFill: RiBookOpenFill, label: 'Job Playbook' },
+  { to: ROUTES.PROFILE, icon: RiUserLine, iconFill: RiUserFill, label: 'Talent Profile' },
 ]
 
 interface AppSidebarProps {
@@ -68,15 +75,18 @@ export function AppSidebar({ open, onClose }: AppSidebarProps) {
                       )
                     }
                   >
-                    {({ isActive }) => (
-                      <>
-                        <item.icon size={20} />
-                        <span className="flex-1">{item.label}</span>
-                        {isActive && (
-                          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-brand" />
-                        )}
-                      </>
-                    )}
+                    {({ isActive }) => {
+                      const Icon = isActive ? item.iconFill : item.icon
+                      return (
+                        <>
+                          {isActive && (
+                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-brand" />
+                          )}
+                          <Icon size={20} className={isActive ? 'text-brand' : ''} />
+                          <span className={cn('flex-1', isActive && 'text-brand font-medium')}>{item.label}</span>
+                        </>
+                      )
+                    }}
                   </NavLink>
                 </li>
               ))}
@@ -103,7 +113,7 @@ export function AppSidebar({ open, onClose }: AppSidebarProps) {
           <Button
             variant="ghost"
             onClick={handleLogout}
-            className="justify-start hover:text-red-400"
+            className="justify-start hover:text-error hover:bg-error/10"
           >
             <RiLogoutBoxLine size={20} />
             <span>Logout</span>

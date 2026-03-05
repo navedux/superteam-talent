@@ -11,7 +11,7 @@ export function ProgressBar({ value, size = 'md', className }: ProgressBarProps)
 
   return (
     <div className={cn(
-      'w-full bg-bg-input',
+      'w-full bg-[#333333]',
       size === 'sm' ? 'h-1.5' : 'h-2',
       className
     )}>
