@@ -1,6 +1,7 @@
+import { useState } from 'react'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
-import { RiMailLine, RiAtLine, RiUserLine } from '@remixicon/react'
+import { RiMailLine, RiAtLine, RiUserLine, RiLockLine, RiEyeLine, RiEyeOffLine } from '@remixicon/react'
 import type { IdentityContactData } from '@/types/onboarding'
 
 interface StepProps {
@@ -22,6 +23,7 @@ const countryOptions = [
 ]
 
 export function StepIdentityContact({ data, onUpdate }: StepProps) {
+  const [showPassword, setShowPassword] = useState(false)
   const update = (field: keyof IdentityContactData, value: string) => {
     onUpdate({ ...data, [field]: value })
   }
@@ -49,13 +51,27 @@ export function StepIdentityContact({ data, onUpdate }: StepProps) {
           icon={<RiUserLine size={20} />}
         />
         <Input
-          label="Label"
+          label="Email"
           required
           placeholder="hello@example.com"
           type="email"
           value={data.email}
           onChange={e => update('email', e.target.value)}
           icon={<RiMailLine size={20} />}
+        />
+        <Input
+          label="Set Password"
+          required
+          placeholder="Min. 8 characters"
+          type={showPassword ? 'text' : 'password'}
+          value={data.password}
+          onChange={e => update('password', e.target.value)}
+          icon={<RiLockLine size={20} />}
+          rightIcon={
+            <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-text-muted hover:text-text-primary transition-colors">
+              {showPassword ? <RiEyeOffLine size={18} /> : <RiEyeLine size={18} />}
+            </button>
+          }
         />
         <Input
           label="Telegram Handle"
@@ -65,14 +81,16 @@ export function StepIdentityContact({ data, onUpdate }: StepProps) {
           onChange={e => update('telegramHandle', e.target.value)}
           icon={<RiAtLine size={20} />}
         />
-        <Select
-          label="Based In"
-          required
-          placeholder="Select your country"
-          options={countryOptions}
-          value={data.basedIn}
-          onChange={e => update('basedIn', e.target.value)}
-        />
+        <div className="col-span-2">
+          <Select
+            label="Based In"
+            required
+            placeholder="Select your country"
+            options={countryOptions}
+            value={data.basedIn}
+            onChange={e => update('basedIn', e.target.value)}
+          />
+        </div>
       </div>
 
       {/* Social Links */}

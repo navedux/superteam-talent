@@ -15,6 +15,7 @@ const initialData: OnboardingData = {
   identityContact: {
     fullName: '',
     email: '',
+    password: '',
     telegramHandle: '',
     basedIn: '',
     twitterHandle: '',
@@ -41,8 +42,8 @@ const initialData: OnboardingData = {
     description: '',
   },
   community: {
-    superteamMember: false,
-    localChapter: '',
+    walletAddress: '',
+    detectedCommunities: [],
     referralSource: '',
     bio: '',
   },
@@ -153,12 +154,11 @@ export default function OnboardingPage() {
           {/* Navigation Buttons */}
           <div className="flex flex-col items-end justify-center gap-3 pb-8 lg:pb-4">
             {!isFirstStep && (
-              <Button variant="secondary" size="lg" fullWidth onClick={goToPrevious}>
+              <Button variant="secondary" fullWidth onClick={goToPrevious}>
                 Back
               </Button>
             )}
             <Button
-              size="lg"
               onClick={isLastStep ? handleSubmit : goToNext}
               fullWidth
             >

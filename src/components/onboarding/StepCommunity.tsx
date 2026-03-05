@@ -1,7 +1,8 @@
+import { useState } from 'react'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
-import { Checkbox } from '@/components/ui/Checkbox'
-import { RiGlobalLine } from '@remixicon/react'
+import { Button } from '@/components/ui/Button'
+import { RiWallet3Line, RiLoader4Line, RiCheckboxCircleLine, RiGlobalLine } from '@remixicon/react'
 import type { CommunityData } from '@/types/onboarding'
 
 interface StepProps {
@@ -9,18 +10,23 @@ interface StepProps {
   onUpdate: (data: CommunityData) => void
 }
 
-const chapterOptions = [
-  { value: 'india', label: 'India' },
-  { value: 'turkey', label: 'Turkey' },
-  { value: 'germany', label: 'Germany' },
-  { value: 'nigeria', label: 'Nigeria' },
-  { value: 'vietnam', label: 'Vietnam' },
-  { value: 'uk', label: 'United Kingdom' },
-  { value: 'brazil', label: 'Brazil' },
-  { value: 'mexico', label: 'Mexico' },
-  { value: 'philippines', label: 'Philippines' },
-  { value: 'none', label: 'Not a member' },
-]
+/* Mock Superteam community detection.
+   In production this would call an API that checks on-chain data
+   for membership in Superteam DAOs / multisigs / token gates. */
+const SUPERTEAM_COMMUNITIES: Record<string, string[]> = {
+  // Mock: wallets starting with certain prefixes map to communities
+  default: ['Superteam Germany', 'Superteam India'],
+}
+
+async function detectSuperteamCommunities(wallet: string): Promise<string[]> {
+  // Simulate API delay
+  await new Promise(r => setTimeout(r, 1500))
+  // For demo: any valid-looking Solana address returns communities
+  if (wallet.length >= 32) {
+    return SUPERTEAM_COMMUNITIES.default
+  }
+  return []
+}
 
 const referralOptions = [
   { value: 'twitter', label: 'Twitter / X' },
@@ -33,8 +39,27 @@ const referralOptions = [
 ]
 
 export function StepCommunity({ data, onUpdate }: StepProps) {
-  const update = (field: keyof CommunityData, value: string | boolean) => {
+  const [detecting, setDetecting] = useState(false)
+  const [detected, setDetected] = useState(data.detectedCommunities.length > 0)
+
+  const update = (field: keyof CommunityData, value: string | boolean | string[]) => {
     onUpdate({ ...data, [field]: value })
+  }
+
+  const handleDetect = async () => {
+    if (!data.walletAddress.trim()) return
+    setDetecting(true)
+    setDetected(false)
+    try {
+      const communities = await detectSuperteamCommunities(data.walletAddress.trim())
+      update('detectedCommunities', communities)
+      setDetected(true)
+    } catch {
+      update('detectedCommunities', [])
+      setDetected(true)
+    } finally {
+      setDetecting(false)
+    }
   }
 
   return (
@@ -44,25 +69,76 @@ export function StepCommunity({ data, onUpdate }: StepProps) {
           Community
         </h2>
         <p className="text-base text-text-secondary tracking-[-0.176px] leading-relaxed">
-          Tell us about your connection to the Solana community
+          Connect your wallet to automatically detect your Superteam memberships
         </p>
       </div>
 
-      <div className="flex flex-col gap-3">
-        <Checkbox
-          label="I am a Superteam member"
-          checked={data.superteamMember}
-          onChange={e => update('superteamMember', e.target.checked)}
-        />
+      <div className="flex flex-col gap-5">
+        {/* Wallet address + detect */}
+        <div className="flex flex-col gap-2">
+          <Input
+            label="Solana Wallet Address"
+            required
+            placeholder="e.g. 7xKX...9fGh or your .sol domain"
+            value={data.walletAddress}
+            onChange={e => {
+              update('walletAddress', e.target.value)
+              if (detected) setDetected(false)
+            }}
+            icon={<RiWallet3Line size={20} />}
+          />
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleDetect}
+            disabled={detecting || !data.walletAddress.trim()}
+            className="self-start"
+          >
+            {detecting ? (
+              <>
+                <RiLoader4Line size={14} className="animate-spin" />
+                Detecting...
+              </>
+            ) : (
+              'Detect Memberships'
+            )}
+          </Button>
+        </div>
 
-        <Select
-          label="Local Chapter"
-          optional
-          placeholder="Select your local chapter"
-          options={chapterOptions}
-          value={data.localChapter}
-          onChange={e => update('localChapter', e.target.value)}
-        />
+        {/* Detection results */}
+        {detected && (
+          <div className="flex flex-col gap-3">
+            {data.detectedCommunities.length > 0 ? (
+              <>
+                <div className="flex items-center gap-2">
+                  <RiCheckboxCircleLine size={16} className="text-success" />
+                  <span className="text-sm text-success font-medium">
+                    {data.detectedCommunities.length} Superteam {data.detectedCommunities.length === 1 ? 'community' : 'communities'} found
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {data.detectedCommunities.map(community => (
+                    <div
+                      key={community}
+                      className="flex items-center gap-2 px-3 py-2 bg-brand/10 border border-brand/30"
+                    >
+                      <img src="/ST_LOGO.webp" alt="" className="h-3.5 opacity-80" />
+                      <span className="text-sm font-medium text-brand">{community}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div className="flex items-center gap-2 px-3 py-2.5 bg-bg-card border border-border">
+                <span className="text-sm text-text-muted">
+                  No Superteam community memberships found for this wallet. You can still continue — communities can be added later if you join one.
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="border-t border-border" />
 
         <Select
           label="How did you hear about us?"

@@ -22,6 +22,12 @@ import {
   RiGlobalLine,
   RiCameraLine,
   RiUserSettingsLine,
+  RiShieldStarLine,
+  RiAwardLine,
+  RiVideoLine,
+  RiPlayCircleLine,
+  RiUploadLine,
+  RiWallet3Line,
 } from '@remixicon/react'
 import { PageShell } from '@/components/layout/PageShell'
 import { Avatar } from '@/components/ui/Avatar'
@@ -74,7 +80,19 @@ const PROFILE_DEFAULTS = {
   location: 'San Francisco, CA',
   compensation: '$170k – $210k / year',
   desiredRoles: ['Product Design', 'UX Research', 'Design Systems'],
-  communities: ['Superteam', 'Solana Collective', 'Design DAO'],
+  // Superteam communities — detected from wallet address
+  walletAddress: '7xKXq...9fGh',
+  superteamCommunities: ['Superteam Germany', 'Superteam India'],
+  // Endorsements
+  scoutEndorsements: [
+    { name: 'Kash Dhanda', role: 'Talent Scout, Superteam', comment: 'Excellent design engineer with strong Solana ecosystem knowledge. Highly recommended for product design roles.', date: '2025-11-15' },
+    { name: 'Akshay BD', role: 'Talent Scout Lead, Superteam', comment: 'Strong technical skills paired with design sensibility. Great communicator.', date: '2025-10-02' },
+  ],
+  otherEndorsements: [
+    { platform: 'LinkedIn', endorser: 'Sarah Kim', role: 'Product Manager at Jupiter', text: 'Naved consistently delivers high-quality work. A pleasure to collaborate with.' },
+  ],
+  // Intro video
+  introVideoUrl: null as string | null,
   proudestContribution: 'DeFi Protocol Dashboard',
   contributionDetail: 'Open source contribution',
   socials: [
@@ -131,8 +149,12 @@ export default function TalentProfilePage() {
   )
 
   const [desiredRoles, setDesiredRoles] = useState(PROFILE_DEFAULTS.desiredRoles)
-  const [communities, setCommunities] = useState(PROFILE_DEFAULTS.communities)
+  const [superteamCommunities] = useState(PROFILE_DEFAULTS.superteamCommunities)
+  const [scoutEndorsements] = useState(PROFILE_DEFAULTS.scoutEndorsements)
+  const [otherEndorsements, setOtherEndorsements] = useState(PROFILE_DEFAULTS.otherEndorsements)
+  const [introVideoUrl, setIntroVideoUrl] = useState(PROFILE_DEFAULTS.introVideoUrl)
   const [portfolio, setPortfolio] = useState<PortfolioItem[]>([])
+  const [addEndorsementOpen, setAddEndorsementOpen] = useState(false)
   const proudestContribution = PROFILE_DEFAULTS.proudestContribution
   const contributionDetail = PROFILE_DEFAULTS.contributionDetail
 
@@ -144,6 +166,7 @@ export default function TalentProfilePage() {
   const updateMenuRef = useRef<HTMLDivElement>(null)
   const coverInputRef = useRef<HTMLInputElement>(null)
   const avatarInputRef = useRef<HTMLInputElement>(null)
+  const videoInputRef = useRef<HTMLInputElement>(null)
 
   // Cover & avatar state
   const [coverUrl, setCoverUrl] = useState<string | null>(null)
@@ -399,13 +422,157 @@ export default function TalentProfilePage() {
               </div>
             </SectionCard>
 
-            {/* Communities */}
-            <SectionCard title="Communities">
-              <div className="flex flex-wrap gap-2">
-                {communities.map(c => (
-                  <Badge key={c} variant="default">{c}</Badge>
-                ))}
+            {/* Superteam Communities (wallet-detected) */}
+            <SectionCard title="Superteam Communities">
+              {superteamCommunities.length > 0 ? (
+                <div className="flex flex-col gap-3">
+                  <div className="flex flex-wrap gap-2">
+                    {superteamCommunities.map(c => (
+                      <div
+                        key={c}
+                        className="flex items-center gap-2 px-3 py-2 bg-brand/10 border border-brand/30"
+                      >
+                        <img src="/ST_LOGO.webp" alt="" className="h-3.5 opacity-80" />
+                        <span className="text-sm font-medium text-brand">{c}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-text-muted">
+                    <RiWallet3Line size={12} />
+                    <span>Verified via wallet {PROFILE_DEFAULTS.walletAddress}</span>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-text-muted">No Superteam community memberships detected.</p>
+              )}
+            </SectionCard>
+
+            {/* Endorsements */}
+            <SectionCard title="Endorsements">
+              <div className="flex flex-col gap-4">
+                {/* Talent Scout Endorsements (prioritized) */}
+                {scoutEndorsements.length > 0 && (
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <RiShieldStarLine size={14} className="text-brand" />
+                      <span className="text-xs font-medium text-brand uppercase tracking-wider">Talent Scout Endorsements</span>
+                    </div>
+                    {scoutEndorsements.map(e => (
+                      <div key={e.name} className="flex flex-col gap-2 p-3 bg-brand/5 border border-brand/20">
+                        <div className="flex items-start gap-3">
+                          <Avatar name={e.name} size="sm" />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium text-text-primary">{e.name}</span>
+                              <Badge variant="brand" className="text-[10px] py-0">Scout</Badge>
+                            </div>
+                            <span className="text-xs text-text-muted">{e.role}</span>
+                          </div>
+                        </div>
+                        <p className="text-sm text-text-secondary leading-relaxed">&ldquo;{e.comment}&rdquo;</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Other Platform Endorsements */}
+                {otherEndorsements.length > 0 && (
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <RiAwardLine size={14} className="text-text-muted" />
+                      <span className="text-xs font-medium text-text-muted uppercase tracking-wider">Other Endorsements</span>
+                    </div>
+                    {otherEndorsements.map(e => (
+                      <div key={e.endorser} className="flex flex-col gap-2 p-3 bg-bg-secondary border border-border">
+                        <div className="flex items-start gap-3">
+                          <Avatar name={e.endorser} size="sm" />
+                          <div className="flex-1 min-w-0">
+                            <span className="text-sm font-medium text-text-primary">{e.endorser}</span>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs text-text-muted">{e.role}</span>
+                              <span className="text-xs text-text-muted">&bull;</span>
+                              <span className="text-xs text-text-muted">{e.platform}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <p className="text-sm text-text-secondary leading-relaxed">&ldquo;{e.text}&rdquo;</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Add Endorsement */}
+                <button
+                  onClick={() => setAddEndorsementOpen(true)}
+                  className="flex items-center gap-2 px-3 py-2.5 border border-dashed border-brand/40 hover:border-brand transition-colors cursor-pointer group"
+                >
+                  <RiAddLine size={16} className="text-brand/60 group-hover:text-brand" />
+                  <span className="text-sm text-brand/60 group-hover:text-brand">Add Endorsement</span>
+                </button>
               </div>
+            </SectionCard>
+
+            {/* Intro Video */}
+            <SectionCard title="Intro Video">
+              {introVideoUrl ? (
+                <div className="flex flex-col gap-2">
+                  <div className="relative aspect-video bg-black border border-border overflow-hidden group">
+                    <video
+                      src={introVideoUrl}
+                      className="w-full h-full object-cover"
+                      controls={false}
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/50 transition-colors cursor-pointer"
+                      onClick={() => {
+                        const v = document.querySelector<HTMLVideoElement>('#intro-video-player')
+                        if (v) { v.controls = true; v.play() }
+                      }}
+                    >
+                      <RiPlayCircleLine size={48} className="text-white/80 group-hover:text-white transition-colors" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-text-muted">1 min max &bull; Helps recruiters find the right talent</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIntroVideoUrl(null)}
+                      className="text-red-400 hover:text-red-300"
+                    >
+                      <RiDeleteBinLine size={14} />
+                      Remove
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-3 py-6">
+                  <div className="w-12 h-12 flex items-center justify-center bg-brand/10 border border-brand/20">
+                    <RiVideoLine size={24} className="text-brand/60" />
+                  </div>
+                  <div className="flex flex-col items-center gap-1 text-center">
+                    <p className="text-sm text-text-primary font-medium">Add a 1-minute intro video</p>
+                    <p className="text-xs text-text-muted max-w-[260px]">Help recruiters get to know you better. Record a short intro highlighting your skills and experience.</p>
+                  </div>
+                  <Button variant="secondary" size="sm" onClick={() => videoInputRef.current?.click()}>
+                    <RiUploadLine size={14} />
+                    Upload Video
+                  </Button>
+                  <input
+                    ref={videoInputRef}
+                    type="file"
+                    accept="video/*"
+                    className="hidden"
+                    onChange={e => {
+                      const file = e.target.files?.[0]
+                      if (file) {
+                        // Check duration in production; for now just accept
+                        setIntroVideoUrl(URL.createObjectURL(file))
+                      }
+                      e.target.value = ''
+                    }}
+                  />
+                </div>
+              )}
             </SectionCard>
           </div>
 
@@ -560,7 +727,7 @@ export default function TalentProfilePage() {
       {/* Edit Profile Modal */}
       {editOpen && (
         <EditProfileModal
-          data={{ bio, location, roleTitle, availability, openFor, compensation, desiredRoles, communities }}
+          data={{ bio, location, roleTitle, availability, openFor, compensation, desiredRoles }}
           onSave={(d) => {
             setBio(d.bio)
             setLocation(d.location)
@@ -569,10 +736,22 @@ export default function TalentProfilePage() {
             setOpenFor(d.openFor)
             setCompensation(d.compensation)
             setDesiredRoles(d.desiredRoles)
-            setCommunities(d.communities)
             handleSave()
           }}
           onClose={() => setEditOpen(false)}
+        />
+      )}
+
+      {/* Add Endorsement Modal */}
+      {addEndorsementOpen && (
+        <AddEndorsementModal
+          onAdd={(endorsement) => {
+            setOtherEndorsements(prev => [...prev, endorsement])
+            setAddEndorsementOpen(false)
+            setShowSaved(true)
+            setTimeout(() => setShowSaved(false), 2000)
+          }}
+          onClose={() => setAddEndorsementOpen(false)}
         />
       )}
     </PageShell>
@@ -847,7 +1026,6 @@ interface EditData {
   openFor: string
   compensation: string
   desiredRoles: string[]
-  communities: string[]
 }
 
 function EditProfileModal({ data, onSave, onClose }: {
@@ -858,7 +1036,6 @@ function EditProfileModal({ data, onSave, onClose }: {
   const overlayRef = useRef<HTMLDivElement>(null)
   const [form, setForm] = useState<EditData>(data)
   const [newRole, setNewRole] = useState('')
-  const [newCommunity, setNewCommunity] = useState('')
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
@@ -874,13 +1051,6 @@ function EditProfileModal({ data, onSave, onClose }: {
     if (newRole.trim() && !form.desiredRoles.includes(newRole.trim())) {
       update('desiredRoles', [...form.desiredRoles, newRole.trim()])
       setNewRole('')
-    }
-  }
-
-  const addCommunity = () => {
-    if (newCommunity.trim() && !form.communities.includes(newCommunity.trim())) {
-      update('communities', [...form.communities, newCommunity.trim()])
-      setNewCommunity('')
     }
   }
 
@@ -947,38 +1117,132 @@ function EditProfileModal({ data, onSave, onClose }: {
             </div>
           </div>
 
-          <div className="border-t border-border" />
-
-          {/* Communities */}
-          <div className="flex flex-col gap-3">
-            <span className="text-xs font-medium text-text-muted uppercase tracking-wider">Communities</span>
-            <div className="flex flex-wrap gap-2">
-              {form.communities.map(c => (
-                <span key={c} className="flex items-center gap-1 bg-white/8 text-text-secondary text-xs px-2 py-1">
-                  {c}
-                  <button onClick={() => update('communities', form.communities.filter(x => x !== c))} className="text-text-muted hover:text-red-400 cursor-pointer">
-                    <RiCloseLine size={12} />
-                  </button>
-                </span>
-              ))}
-            </div>
-            <div className="flex items-center gap-2">
-              <input
-                value={newCommunity}
-                onChange={e => setNewCommunity(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && addCommunity()}
-                placeholder="Add a community..."
-                className="bg-bg-input border border-border px-3 py-2 text-sm text-text-primary placeholder:text-text-muted outline-none focus:border-brand flex-1"
-              />
-              <Button size="sm" variant="secondary" onClick={addCommunity}>Add</Button>
-            </div>
-          </div>
         </div>
 
         {/* Footer */}
         <div className="flex items-center justify-end gap-3 p-4 border-t border-border">
           <Button variant="secondary" size="sm" onClick={onClose}>Cancel</Button>
           <Button size="sm" onClick={() => onSave(form)}>Save Changes</Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ─── Add Endorsement Modal ─── */
+
+interface OtherEndorsement {
+  platform: string
+  endorser: string
+  role: string
+  text: string
+}
+
+const ENDORSEMENT_PLATFORMS = ['LinkedIn', 'Twitter / X', 'GitHub', 'Superteam Earn', 'Other']
+
+function AddEndorsementModal({ onAdd, onClose }: {
+  onAdd: (endorsement: OtherEndorsement) => void
+  onClose: () => void
+}) {
+  const overlayRef = useRef<HTMLDivElement>(null)
+  const [platform, setPlatform] = useState(ENDORSEMENT_PLATFORMS[0])
+  const [endorser, setEndorser] = useState('')
+  const [role, setRole] = useState('')
+  const [text, setText] = useState('')
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [onClose])
+
+  const handleSubmit = () => {
+    if (!endorser.trim() || !text.trim()) return
+    onAdd({ platform, endorser: endorser.trim(), role: role.trim(), text: text.trim() })
+  }
+
+  return (
+    <div
+      ref={overlayRef}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      onClick={e => { if (e.target === overlayRef.current) onClose() }}
+    >
+      <div className="absolute inset-0 bg-black/60" />
+      <div className="relative w-full max-w-md bg-bg-secondary border border-border flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-border">
+          <h2 className="text-lg font-medium text-text-primary">Add Endorsement</h2>
+          <button onClick={onClose} className="text-text-muted hover:text-text-primary transition-colors cursor-pointer p-1">
+            <RiCloseLine size={20} />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="p-4 flex flex-col gap-4">
+          {/* Platform */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs text-text-muted">Platform</label>
+            <div className="flex flex-wrap gap-2">
+              {ENDORSEMENT_PLATFORMS.map(p => (
+                <button
+                  key={p}
+                  onClick={() => setPlatform(p)}
+                  className={`px-2.5 py-1.5 text-xs border transition-colors cursor-pointer ${
+                    platform === p
+                      ? 'border-brand bg-brand/10 text-brand'
+                      : 'border-border bg-bg-card text-text-muted hover:text-text-primary'
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Endorser name */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs text-text-muted">Endorser Name</label>
+            <input
+              type="text"
+              value={endorser}
+              onChange={e => setEndorser(e.target.value)}
+              placeholder="e.g. Jane Smith"
+              className="w-full px-3 py-2 bg-bg-card border border-border text-sm text-text-primary placeholder:text-text-muted outline-none focus:border-brand transition-colors"
+              autoFocus
+            />
+          </div>
+
+          {/* Role */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs text-text-muted">Their Role / Title</label>
+            <input
+              type="text"
+              value={role}
+              onChange={e => setRole(e.target.value)}
+              placeholder="e.g. Product Manager at Jupiter"
+              className="w-full px-3 py-2 bg-bg-card border border-border text-sm text-text-primary placeholder:text-text-muted outline-none focus:border-brand transition-colors"
+            />
+          </div>
+
+          {/* Endorsement text */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs text-text-muted">Endorsement</label>
+            <textarea
+              value={text}
+              onChange={e => setText(e.target.value)}
+              placeholder="What did they say about you?"
+              rows={3}
+              className="w-full px-3 py-2 bg-bg-card border border-border text-sm text-text-primary placeholder:text-text-muted outline-none focus:border-brand transition-colors resize-none"
+            />
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="flex justify-end gap-2 p-4 border-t border-border">
+          <Button variant="ghost" size="sm" onClick={onClose}>Cancel</Button>
+          <Button size="sm" onClick={handleSubmit} disabled={!endorser.trim() || !text.trim()}>
+            Add Endorsement
+          </Button>
         </div>
       </div>
     </div>

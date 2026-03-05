@@ -29,7 +29,7 @@ export function OnboardingSidebar({ steps, currentStep, completedSteps, onStepCl
       </div>
 
       {/* Support Card */}
-      <div className="bg-bg-card p-3 mx-3 flex flex-col gap-3">
+      <div className="bg-bg-card p-3 mx-3 mb-3 flex flex-col gap-3 rounded-lg">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <RiHeadphoneLine size={20} className="text-text-primary" />

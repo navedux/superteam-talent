@@ -1,6 +1,7 @@
 export interface IdentityContactData {
   fullName: string
   email: string
+  password: string
   telegramHandle: string
   basedIn: string
   twitterHandle: string
@@ -31,8 +32,8 @@ export interface ContributionsData {
 }
 
 export interface CommunityData {
-  superteamMember: boolean
-  localChapter: string
+  walletAddress: string
+  detectedCommunities: string[]
   referralSource: string
   bio: string
 }
