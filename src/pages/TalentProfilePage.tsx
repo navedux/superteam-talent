@@ -140,6 +140,7 @@ export default function TalentProfilePage() {
   const [editOpen, setEditOpen] = useState(false)
   const [addSocialOpen, setAddSocialOpen] = useState(false)
   const [updateMenuOpen, setUpdateMenuOpen] = useState(false)
+  const [resumePreviewOpen, setResumePreviewOpen] = useState(false)
   const updateMenuRef = useRef<HTMLDivElement>(null)
   const coverInputRef = useRef<HTMLInputElement>(null)
   const avatarInputRef = useRef<HTMLInputElement>(null)
@@ -413,15 +414,71 @@ export default function TalentProfilePage() {
 
             {/* Resume */}
             <SectionCard title="Resume / CV">
-              <div className="flex items-center gap-3 p-3 bg-bg-secondary">
-                <RiFileTextLine size={18} className="text-brand shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-text-primary truncate">Naved_Alam_Resume.pdf</p>
-                  <p className="text-xs text-text-muted">Uploaded 3 days ago</p>
+              <div className="flex flex-col gap-3">
+                {/* Resume preview thumbnail */}
+                <button
+                  onClick={() => setResumePreviewOpen(true)}
+                  className="w-full h-[320px] bg-white overflow-hidden border border-border hover:border-brand/50 transition-colors cursor-pointer group relative"
+                >
+                  {/* Scaled-down real resume content — clipped to show top portion */}
+                  <div className="w-full h-full pointer-events-none">
+                    <div className="w-full scale-[0.62] origin-top" style={{ width: '161%', marginLeft: '-30.5%' }}>
+                      <div className="px-8 py-6 space-y-4 text-gray-800 text-left">
+                        <div className="space-y-0.5">
+                          <h4 className="text-2xl font-bold text-gray-900">Naved Alam</h4>
+                          <p className="text-sm text-gray-500">Design Engineer &bull; San Francisco, CA</p>
+                          <p className="text-xs text-gray-400">navedalam@email.com &bull; github.com/navedalam &bull; linkedin.com/in/navedalam</p>
+                        </div>
+                        <div className="h-px bg-gray-200" />
+                        <div className="space-y-1.5">
+                          <h5 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Summary</h5>
+                          <p className="text-sm text-gray-600 leading-relaxed">Design Engineer with 5+ years of experience building high-quality web applications and design systems. Passionate about bridging design and engineering to create delightful user experiences.</p>
+                        </div>
+                        <div className="space-y-2">
+                          <h5 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Experience</h5>
+                          <div className="space-y-1">
+                            <div className="flex justify-between"><span className="text-sm font-semibold text-gray-800">Design Engineer</span><span className="text-xs text-gray-400">2023 – Present</span></div>
+                            <p className="text-xs text-gray-500">NodeOps</p>
+                            <ul className="text-sm text-gray-600 list-disc list-inside"><li>Led design system development serving 12+ product teams</li><li>Built responsive dashboard UI handling 100k+ daily users</li></ul>
+                          </div>
+                          <div className="space-y-1">
+                            <div className="flex justify-between"><span className="text-sm font-semibold text-gray-800">Frontend Developer</span><span className="text-xs text-gray-400">2021 – 2023</span></div>
+                            <p className="text-xs text-gray-500">Superteam</p>
+                            <ul className="text-sm text-gray-600 list-disc list-inside"><li>Developed DeFi protocol dashboard with real-time data</li></ul>
+                          </div>
+                        </div>
+                        <div className="space-y-1.5">
+                          <h5 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Skills</h5>
+                          <div className="flex flex-wrap gap-1.5">
+                            {['React', 'TypeScript', 'Tailwind CSS', 'Figma', 'Next.js', 'Solana', 'Design Systems', 'Web3'].map(s => (
+                              <span key={s} className="px-2 py-0.5 bg-gray-100 text-xs text-gray-600">{s}</span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Fade-out at bottom */}
+                  <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white to-transparent" />
+                  {/* Hover overlay */}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                    <span className="text-white text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5">
+                      <RiExternalLinkLine size={14} />
+                      Click to preview
+                    </span>
+                  </div>
+                </button>
+                {/* File info row */}
+                <div className="flex items-center gap-3 p-3 bg-bg-secondary">
+                  <RiFileTextLine size={18} className="text-brand shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-text-primary truncate">Naved_Alam_Resume.pdf</p>
+                    <p className="text-xs text-text-muted">Uploaded 3 days ago</p>
+                  </div>
+                  <Button variant="ghost" size="icon-sm" title="Download">
+                    <RiDownloadLine size={16} />
+                  </Button>
                 </div>
-                <Button variant="ghost" size="icon-sm" title="Download">
-                  <RiDownloadLine size={16} />
-                </Button>
               </div>
             </SectionCard>
 
@@ -495,6 +552,11 @@ export default function TalentProfilePage() {
         />
       )}
 
+      {/* Resume Preview Modal */}
+      {resumePreviewOpen && (
+        <ResumePreviewModal onClose={() => setResumePreviewOpen(false)} />
+      )}
+
       {/* Edit Profile Modal */}
       {editOpen && (
         <EditProfileModal
@@ -526,6 +588,117 @@ function SectionCard({ title, children }: { title: string; children: React.React
         <h3 className="text-sm font-medium text-text-primary">{title}</h3>
       </div>
       <div className="p-4">{children}</div>
+    </div>
+  )
+}
+
+/* ─── Resume Preview Modal ─── */
+
+function ResumePreviewModal({ onClose }: { onClose: () => void }) {
+  const overlayRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [onClose])
+
+  return (
+    <div
+      ref={overlayRef}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8"
+      onClick={e => { if (e.target === overlayRef.current) onClose() }}
+    >
+      <div className="absolute inset-0 bg-black/70" />
+      <div className="relative w-full max-w-2xl bg-white flex flex-col max-h-[90vh] shadow-2xl">
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-3 bg-bg-secondary border-b border-border">
+          <div className="flex items-center gap-2">
+            <RiFileTextLine size={18} className="text-brand" />
+            <span className="text-sm font-medium text-text-primary">Naved_Alam_Resume.pdf</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="icon-sm" title="Download">
+              <RiDownloadLine size={16} />
+            </Button>
+            <button onClick={onClose} className="text-text-muted hover:text-text-primary transition-colors cursor-pointer p-1.5">
+              <RiCloseLine size={20} />
+            </button>
+          </div>
+        </div>
+
+        {/* Full resume preview */}
+        <div className="flex-1 overflow-y-auto bg-white">
+          <div className="px-12 py-10 space-y-6 text-gray-800">
+            {/* Name & Contact */}
+            <div className="text-center space-y-1">
+              <h1 className="text-2xl font-bold text-gray-900">Naved Alam</h1>
+              <p className="text-sm text-gray-500">Design Engineer &bull; San Francisco, CA</p>
+              <p className="text-xs text-gray-400">navedalam@email.com &bull; github.com/navedalam &bull; linkedin.com/in/navedalam</p>
+            </div>
+
+            <div className="h-px bg-gray-200" />
+
+            {/* Summary */}
+            <div className="space-y-2">
+              <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Summary</h2>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                Design Engineer with 5+ years of experience building high-quality web applications and design systems. Passionate about bridging design and engineering to create delightful user experiences. Active contributor to the Solana ecosystem.
+              </p>
+            </div>
+
+            {/* Experience */}
+            <div className="space-y-3">
+              <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Experience</h2>
+              <div className="space-y-1">
+                <div className="flex justify-between items-baseline">
+                  <h3 className="text-sm font-semibold text-gray-800">Design Engineer</h3>
+                  <span className="text-xs text-gray-400">2023 – Present</span>
+                </div>
+                <p className="text-xs text-gray-500 font-medium">NodeOps</p>
+                <ul className="text-sm text-gray-600 space-y-0.5 list-disc list-inside">
+                  <li>Led design system development serving 12+ product teams</li>
+                  <li>Built responsive dashboard UI handling 100k+ daily users</li>
+                  <li>Reduced component library bundle size by 40%</li>
+                </ul>
+              </div>
+              <div className="space-y-1">
+                <div className="flex justify-between items-baseline">
+                  <h3 className="text-sm font-semibold text-gray-800">Frontend Developer</h3>
+                  <span className="text-xs text-gray-400">2021 – 2023</span>
+                </div>
+                <p className="text-xs text-gray-500 font-medium">Superteam</p>
+                <ul className="text-sm text-gray-600 space-y-0.5 list-disc list-inside">
+                  <li>Developed DeFi protocol dashboard with real-time data</li>
+                  <li>Implemented wallet integration and transaction flows</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Skills */}
+            <div className="space-y-2">
+              <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Skills</h2>
+              <div className="flex flex-wrap gap-1.5">
+                {['React', 'TypeScript', 'Tailwind CSS', 'Figma', 'Next.js', 'Solana', 'Design Systems', 'Web3'].map(skill => (
+                  <span key={skill} className="px-2 py-0.5 bg-gray-100 text-xs text-gray-600 rounded-sm">{skill}</span>
+                ))}
+              </div>
+            </div>
+
+            {/* Education */}
+            <div className="space-y-2">
+              <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Education</h2>
+              <div className="flex justify-between items-baseline">
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-800">B.S. Computer Science</h3>
+                  <p className="text-xs text-gray-500">Stanford University</p>
+                </div>
+                <span className="text-xs text-gray-400">2017 – 2021</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
