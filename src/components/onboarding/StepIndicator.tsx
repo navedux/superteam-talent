@@ -11,22 +11,24 @@ interface StepIndicatorProps {
 
 export function StepIndicator({ steps, currentStep, completedSteps, onStepClick }: StepIndicatorProps) {
   return (
-    <div className="flex flex-col gap-8" /* Pencil: gap 32 between step items */>
+    <div className="flex flex-col gap-8">
       {steps.map((step) => {
         const isActive = step.id === currentStep
         const isCompleted = completedSteps.has(step.id)
+        const isReachable = isActive || isCompleted
 
         return (
           <button
             key={step.id}
             onClick={() => onStepClick(step.id)}
+            disabled={!isReachable}
             className={cn(
-              'flex flex-col gap-1 text-left pr-6 border-r-2 transition-colors cursor-pointer',
+              'flex flex-col gap-1 text-left pr-6 border-r-2 transition-colors',
               isActive
-                ? 'border-brand'
+                ? 'border-brand cursor-pointer'
                 : isCompleted
-                  ? 'border-success'
-                  : 'border-transparent'
+                  ? 'border-success cursor-pointer'
+                  : 'border-transparent cursor-not-allowed opacity-50'
             )}
           >
             <span
@@ -41,7 +43,7 @@ export function StepIndicator({ steps, currentStep, completedSteps, onStepClick 
             <span
               className={cn(
                 'text-sm font-medium',
-                isActive ? 'text-text-primary' : 'text-text-secondary'
+                isActive ? 'text-text-primary' : isCompleted ? 'text-text-secondary' : 'text-text-muted'
               )}
             >
               {step.title}

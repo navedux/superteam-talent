@@ -2,11 +2,12 @@ import { useState } from 'react'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Button } from '@/components/ui/Button'
-import { RiWallet3Line, RiLoader4Line, RiCheckboxCircleLine, RiGlobalLine } from '@remixicon/react'
+import { RiWallet3Line, RiLoader4Line, RiCheckboxCircleLine } from '@remixicon/react'
 import type { CommunityData } from '@/types/onboarding'
 
 interface StepProps {
   data: CommunityData
+  errors?: Record<string, string>
   onUpdate: (data: CommunityData) => void
 }
 
@@ -14,14 +15,11 @@ interface StepProps {
    In production this would call an API that checks on-chain data
    for membership in Superteam DAOs / multisigs / token gates. */
 const SUPERTEAM_COMMUNITIES: Record<string, string[]> = {
-  // Mock: wallets starting with certain prefixes map to communities
   default: ['Superteam Germany', 'Superteam India'],
 }
 
 async function detectSuperteamCommunities(wallet: string): Promise<string[]> {
-  // Simulate API delay
   await new Promise(r => setTimeout(r, 1500))
-  // For demo: any valid-looking Solana address returns communities
   if (wallet.length >= 32) {
     return SUPERTEAM_COMMUNITIES.default
   }
@@ -38,7 +36,7 @@ const referralOptions = [
   { value: 'other', label: 'Other' },
 ]
 
-export function StepCommunity({ data, onUpdate }: StepProps) {
+export function StepCommunity({ data, errors = {}, onUpdate }: StepProps) {
   const [detecting, setDetecting] = useState(false)
   const [detected, setDetected] = useState(data.detectedCommunities.length > 0)
 
@@ -86,6 +84,7 @@ export function StepCommunity({ data, onUpdate }: StepProps) {
               if (detected) setDetected(false)
             }}
             icon={<RiWallet3Line size={20} />}
+            error={errors.walletAddress}
           />
           <Button
             variant="secondary"
@@ -161,15 +160,6 @@ export function StepCommunity({ data, onUpdate }: StepProps) {
             className="w-full bg-bg-input border border-border px-3 py-2.5 text-sm text-text-primary placeholder:text-text-muted shadow-input tracking-[-0.084px] focus:outline-none focus:ring-1 focus:ring-brand focus:border-brand transition-colors duration-150 resize-none font-body"
           />
         </div>
-
-        <Input
-          label="Website"
-          optional
-          placeholder="https://yoursite.com"
-          value=""
-          icon={<RiGlobalLine size={20} />}
-          readOnly
-        />
       </div>
     </div>
   )

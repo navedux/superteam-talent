@@ -5,6 +5,7 @@ import type { JobCategoryData } from '@/types/onboarding'
 
 interface StepProps {
   data: JobCategoryData
+  errors?: Record<string, string>
   onUpdate: (data: JobCategoryData) => void
 }
 
@@ -29,7 +30,7 @@ const experienceOptions = [
   { value: '10+', label: '10+ years' },
 ]
 
-export function StepJobCategory({ data, onUpdate }: StepProps) {
+export function StepJobCategory({ data, errors = {}, onUpdate }: StepProps) {
   const update = (field: keyof JobCategoryData, value: string | string[]) => {
     onUpdate({ ...data, [field]: value })
   }
@@ -53,6 +54,7 @@ export function StepJobCategory({ data, onUpdate }: StepProps) {
           options={roleOptions}
           value={data.primaryRole}
           onChange={e => update('primaryRole', e.target.value)}
+          error={errors.primaryRole}
         />
         <Select
           label="Secondary Role"
@@ -69,6 +71,7 @@ export function StepJobCategory({ data, onUpdate }: StepProps) {
           value={data.skills.join(', ')}
           onChange={e => update('skills', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
           icon={<RiBriefcaseLine size={20} />}
+          error={errors.skills}
         />
         <Select
           label="Years of Experience"
@@ -77,6 +80,7 @@ export function StepJobCategory({ data, onUpdate }: StepProps) {
           options={experienceOptions}
           value={data.yearsOfExperience}
           onChange={e => update('yearsOfExperience', e.target.value)}
+          error={errors.yearsOfExperience}
         />
       </div>
     </div>

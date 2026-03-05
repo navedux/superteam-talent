@@ -2,10 +2,12 @@ import { useState } from 'react'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { RiMailLine, RiAtLine, RiUserLine, RiLockLine, RiEyeLine, RiEyeOffLine } from '@remixicon/react'
+import { cn } from '@/lib/cn'
 import type { IdentityContactData } from '@/types/onboarding'
 
 interface StepProps {
   data: IdentityContactData
+  errors?: Record<string, string>
   onUpdate: (data: IdentityContactData) => void
 }
 
@@ -22,11 +24,23 @@ const countryOptions = [
   { value: 'other', label: 'Other' },
 ]
 
-export function StepIdentityContact({ data, onUpdate }: StepProps) {
+function getPasswordStrength(pw: string): 'weak' | 'medium' | 'strong' {
+  if (pw.length < 8) return 'weak'
+  const hasUpper = /[A-Z]/.test(pw)
+  const hasNumber = /[0-9]/.test(pw)
+  const hasSpecial = /[^a-zA-Z0-9]/.test(pw)
+  const score = [hasUpper, hasNumber, hasSpecial, pw.length >= 12].filter(Boolean).length
+  if (score >= 3) return 'strong'
+  return 'medium'
+}
+
+export function StepIdentityContact({ data, errors = {}, onUpdate }: StepProps) {
   const [showPassword, setShowPassword] = useState(false)
   const update = (field: keyof IdentityContactData, value: string) => {
     onUpdate({ ...data, [field]: value })
   }
+
+  const strength = data.password ? getPasswordStrength(data.password) : null
 
   return (
     <div className="flex flex-col gap-8">
@@ -41,7 +55,7 @@ export function StepIdentityContact({ data, onUpdate }: StepProps) {
       </div>
 
       {/* Basic Info Grid */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Input
           label="Full Name"
           required
@@ -49,6 +63,7 @@ export function StepIdentityContact({ data, onUpdate }: StepProps) {
           value={data.fullName}
           onChange={e => update('fullName', e.target.value)}
           icon={<RiUserLine size={20} />}
+          error={errors.fullName}
         />
         <Input
           label="Email"
@@ -58,21 +73,50 @@ export function StepIdentityContact({ data, onUpdate }: StepProps) {
           value={data.email}
           onChange={e => update('email', e.target.value)}
           icon={<RiMailLine size={20} />}
+          error={errors.email}
         />
-        <Input
-          label="Set Password"
-          required
-          placeholder="Min. 8 characters"
-          type={showPassword ? 'text' : 'password'}
-          value={data.password}
-          onChange={e => update('password', e.target.value)}
-          icon={<RiLockLine size={20} />}
-          rightIcon={
-            <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-text-muted hover:text-text-primary transition-colors">
-              {showPassword ? <RiEyeOffLine size={18} /> : <RiEyeLine size={18} />}
-            </button>
-          }
-        />
+        <div className="flex flex-col gap-1">
+          <Input
+            label="Set Password"
+            required
+            placeholder="Min. 8 characters"
+            type={showPassword ? 'text' : 'password'}
+            value={data.password}
+            onChange={e => update('password', e.target.value)}
+            icon={<RiLockLine size={20} />}
+            rightIcon={
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                className="text-text-muted hover:text-text-primary transition-colors"
+              >
+                {showPassword ? <RiEyeOffLine size={18} /> : <RiEyeLine size={18} />}
+              </button>
+            }
+            error={errors.password}
+          />
+          {strength && !errors.password && (
+            <div className="flex items-center gap-2 mt-0.5">
+              <div className="flex-1 h-1 bg-bg-elevated rounded-full overflow-hidden">
+                <div className={cn(
+                  'h-full rounded-full transition-all duration-300',
+                  strength === 'weak' && 'w-1/3 bg-error',
+                  strength === 'medium' && 'w-2/3 bg-warning',
+                  strength === 'strong' && 'w-full bg-success',
+                )} />
+              </div>
+              <span className={cn(
+                'text-xs',
+                strength === 'weak' && 'text-error',
+                strength === 'medium' && 'text-warning',
+                strength === 'strong' && 'text-success',
+              )}>
+                {strength === 'weak' ? 'Weak' : strength === 'medium' ? 'Medium' : 'Strong'}
+              </span>
+            </div>
+          )}
+        </div>
         <Input
           label="Telegram Handle"
           required
@@ -80,8 +124,9 @@ export function StepIdentityContact({ data, onUpdate }: StepProps) {
           value={data.telegramHandle}
           onChange={e => update('telegramHandle', e.target.value)}
           icon={<RiAtLine size={20} />}
+          error={errors.telegramHandle}
         />
-        <div className="col-span-2">
+        <div className="sm:col-span-2">
           <Select
             label="Based In"
             required
@@ -89,6 +134,7 @@ export function StepIdentityContact({ data, onUpdate }: StepProps) {
             options={countryOptions}
             value={data.basedIn}
             onChange={e => update('basedIn', e.target.value)}
+            error={errors.basedIn}
           />
         </div>
       </div>
@@ -125,6 +171,7 @@ export function StepIdentityContact({ data, onUpdate }: StepProps) {
           value={data.githubProfile}
           onChange={e => update('githubProfile', e.target.value)}
           icon={<RiAtLine size={20} />}
+          error={errors.githubProfile}
         />
         <Input
           label="Superteam Earn Profile"

@@ -54,8 +54,8 @@ export function LoginForm() {
         <div className="flex flex-col items-center w-full max-w-[392px] mx-auto gap-6">
           {view === 'forgot-sent' ? (
             <>
-              <div className="w-12 h-12 bg-green-500/20 flex items-center justify-center">
-                <RiCheckLine size={24} className="text-green-400" />
+              <div className="w-12 h-12 bg-success/20 flex items-center justify-center">
+                <RiCheckLine size={24} className="text-success" />
               </div>
               <div className="flex flex-col gap-3 items-center">
                 <h2 className="font-heading text-2xl font-medium text-text-primary text-center">Check your email</h2>

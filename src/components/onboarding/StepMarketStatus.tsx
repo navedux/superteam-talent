@@ -3,6 +3,7 @@ import type { MarketStatusData } from '@/types/onboarding'
 
 interface StepProps {
   data: MarketStatusData
+  errors?: Record<string, string>
   onUpdate: (data: MarketStatusData) => void
 }
 
@@ -30,7 +31,7 @@ const compensationOptions = [
   { value: '200k+', label: '$200k+' },
 ]
 
-export function StepMarketStatus({ data, onUpdate }: StepProps) {
+export function StepMarketStatus({ data, errors = {}, onUpdate }: StepProps) {
   const update = (field: keyof MarketStatusData, value: string) => {
     onUpdate({ ...data, [field]: value })
   }
@@ -54,6 +55,7 @@ export function StepMarketStatus({ data, onUpdate }: StepProps) {
           options={availabilityOptions}
           value={data.availability}
           onChange={e => update('availability', e.target.value)}
+          error={errors.availability}
         />
         <Select
           label="Preferred Job Type"
@@ -62,6 +64,7 @@ export function StepMarketStatus({ data, onUpdate }: StepProps) {
           options={jobTypeOptions}
           value={data.jobType}
           onChange={e => update('jobType', e.target.value)}
+          error={errors.jobType}
         />
         <Select
           label="Expected Compensation"
@@ -70,6 +73,7 @@ export function StepMarketStatus({ data, onUpdate }: StepProps) {
           options={compensationOptions}
           value={data.compensationRange}
           onChange={e => update('compensationRange', e.target.value)}
+          error={errors.compensationRange}
         />
       </div>
     </div>

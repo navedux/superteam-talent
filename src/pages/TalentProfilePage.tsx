@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import {
   RiMapPinLine,
   RiBriefcaseLine,
@@ -188,7 +188,7 @@ export default function TalentProfilePage() {
   const handleSave = () => {
     setEditOpen(false)
     setShowSaved(true)
-    setTimeout(() => setShowSaved(false), 2000)
+    setTimeout(() => setShowSaved(false), 4000)
   }
 
   const addPortfolioItem = () => {
@@ -200,7 +200,23 @@ export default function TalentProfilePage() {
     setPortfolio(prev => prev.filter(p => p.id !== id))
   }
 
-  const profileCompletion = 70
+  const profileCompletion = useMemo(() => {
+    const fields = [
+      !!bio.trim(),
+      !!roleTitle.trim(),
+      !!availability,
+      !!openFor,
+      !!location,
+      !!compensation,
+      socialLinks.length > 0,
+      desiredRoles.length > 0,
+      portfolio.length > 0,
+      !!introVideoUrl,
+      !!coverUrl,
+      !!avatarUrl,
+    ]
+    return Math.round((fields.filter(Boolean).length / fields.length) * 100)
+  }, [bio, roleTitle, availability, openFor, location, compensation, socialLinks, desiredRoles, portfolio, introVideoUrl, coverUrl, avatarUrl])
 
   return (
     <PageShell user={user}>
@@ -232,7 +248,7 @@ export default function TalentProfilePage() {
           </div>
 
           {/* Level steps */}
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             {/* Level 1 — completed */}
             <div className="flex items-center gap-2 px-3 py-2 bg-brand/10 border border-brand/30">
               <span className="text-xs font-medium text-brand flex-1">
@@ -337,7 +353,7 @@ export default function TalentProfilePage() {
             <div className="flex items-start justify-between gap-4">
               <div className="flex flex-col gap-1 min-w-0">
                 <h1 className="text-lg font-medium text-text-primary">{user?.name ?? 'Naved Alam'}</h1>
-                <p className="text-[13px] text-text-secondary leading-relaxed">{bio}</p>
+                <p className="text-[13px] text-text-secondary leading-relaxed line-clamp-2">{bio}</p>
               </div>
 
               {/* Current Role — right aligned */}
@@ -469,7 +485,7 @@ export default function TalentProfilePage() {
                             <span className="text-xs text-text-muted">{e.role}</span>
                           </div>
                         </div>
-                        <p className="text-sm text-text-secondary leading-relaxed">&ldquo;{e.comment}&rdquo;</p>
+                        <p className="text-sm text-text-secondary leading-relaxed line-clamp-3">&ldquo;{e.comment}&rdquo;</p>
                       </div>
                     ))}
                   </div>
@@ -495,7 +511,7 @@ export default function TalentProfilePage() {
                             </div>
                           </div>
                         </div>
-                        <p className="text-sm text-text-secondary leading-relaxed">&ldquo;{e.text}&rdquo;</p>
+                        <p className="text-sm text-text-secondary leading-relaxed line-clamp-3">&ldquo;{e.text}&rdquo;</p>
                       </div>
                     ))}
                   </div>
@@ -651,7 +667,7 @@ export default function TalentProfilePage() {
 
             {/* Portfolio */}
             <SectionCard title="Portfolio">
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 <button
                   onClick={addPortfolioItem}
                   className="h-[90px] bg-bg-secondary border border-dashed border-brand/40 hover:border-brand flex flex-col items-center justify-center gap-1.5 cursor-pointer transition-colors group"
@@ -665,7 +681,7 @@ export default function TalentProfilePage() {
                     <span className="text-xs text-text-secondary">{item.title}</span>
                     <button
                       onClick={() => removePortfolioItem(item.id)}
-                      className="absolute top-1 right-1 p-0.5 bg-red-500/80 text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                      className="absolute top-1 right-1 p-0.5 bg-red-500/80 text-white opacity-60 hover:opacity-100 focus:opacity-100 transition-opacity cursor-pointer"
                     >
                       <RiDeleteBinLine size={10} />
                     </button>
@@ -749,7 +765,7 @@ export default function TalentProfilePage() {
             setOtherEndorsements(prev => [...prev, endorsement])
             setAddEndorsementOpen(false)
             setShowSaved(true)
-            setTimeout(() => setShowSaved(false), 2000)
+            setTimeout(() => setShowSaved(false), 4000)
           }}
           onClose={() => setAddEndorsementOpen(false)}
         />

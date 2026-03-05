@@ -15,7 +15,9 @@
   --color-text-secondary: #a3a3a3;
   --color-text-muted: #7b7b7b;
   --color-error: #e93544;
+  --color-warning: #f59e0b;
   --color-success: #22c55e;
+  --color-bg-track: #333333;
 
   /* Typography */
   --font-heading: 'Space Grotesk', sans-serif;

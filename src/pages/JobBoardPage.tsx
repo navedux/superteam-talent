@@ -179,7 +179,7 @@ export default function JobBoardPage() {
             <div key={i} className="bg-bg-secondary p-4 h-40 animate-pulse" />
           ))
         ) : filteredJobs.length === 0 ? (
-          <EmptyState icon={RiBriefcaseLine} message="No jobs match your search criteria" actionLabel="Reset Filters" onAction={() => { setSearchQuery(''); setActiveFilters([]); setHiddenJobs(new Set()) }} />
+          <EmptyState icon={RiBriefcaseLine} message="No jobs match your search criteria" description="Try adjusting your filters or search terms" actionLabel="Reset Filters" onAction={() => { setSearchQuery(''); setActiveFilters([]); setHiddenJobs(new Set()) }} />
         ) : (
           visibleJobs.map(job => (
             <div key={job.id} className="bg-bg-elevated p-1 flex flex-col">
@@ -189,7 +189,7 @@ export default function JobBoardPage() {
                   <Avatar name={job.company} size="lg" />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="text-base font-medium text-text-primary">{job.title}</h3>
+                      <h3 className="text-base font-medium text-text-primary truncate">{job.title}</h3>
                       {job.status && (
                         <Badge variant={job.status === 'Paid' ? 'brand' : 'outline'}>{job.status}</Badge>
                       )}
@@ -197,9 +197,9 @@ export default function JobBoardPage() {
                     <p className="text-[13px] text-text-secondary">{job.company}</p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <Button variant="ghost" size="icon-sm" onClick={() => handleSave(job.id)} className={cn(savedJobs.has(job.id) ? 'text-brand' : 'text-text-muted', 'hidden sm:flex')} title={savedJobs.has(job.id) ? 'Unsave' : 'Save'}><RiBookmarkLine size={18} /></Button>
-                    <Button variant="secondary" size="sm" className="hidden sm:flex">
-                      More Info
+                    <Button variant="ghost" size="icon-sm" onClick={() => handleSave(job.id)} className={cn(savedJobs.has(job.id) ? 'text-brand' : 'text-text-muted')} title={savedJobs.has(job.id) ? 'Unsave' : 'Save'}><RiBookmarkLine size={18} /></Button>
+                    <Button variant="secondary" size="sm">
+                      <span className="hidden sm:inline">More Info</span>
                       <RiArrowRightSLine size={14} />
                     </Button>
                     {appliedJobs.has(job.id) ? (
@@ -216,7 +216,7 @@ export default function JobBoardPage() {
                 </div>
 
                 {/* Description */}
-                <p className="text-[13px] text-text-secondary tracking-[-0.078px] leading-[1.54]">
+                <p className="text-[13px] text-text-secondary tracking-[-0.078px] leading-[1.54] line-clamp-2">
                   {job.description}
                 </p>
 

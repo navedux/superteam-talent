@@ -21,7 +21,6 @@ export interface MarketStatusData {
   availability: string
   jobType: string
   compensationRange: string
-  startDate: string
 }
 
 export interface ContributionsData {
