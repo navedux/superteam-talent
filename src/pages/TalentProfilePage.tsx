@@ -18,6 +18,10 @@ import {
   RiExternalLinkLine,
   RiArrowDownSLine,
   RiLockLine,
+  RiTwitterXLine,
+  RiGlobalLine,
+  RiCameraLine,
+  RiUserSettingsLine,
 } from '@remixicon/react'
 import { PageShell } from '@/components/layout/PageShell'
 import { Avatar } from '@/components/ui/Avatar'
@@ -74,10 +78,11 @@ const PROFILE_DEFAULTS = {
   proudestContribution: 'DeFi Protocol Dashboard',
   contributionDetail: 'Open source contribution',
   socials: [
-    { icon: 'github' as const, label: 'GitHub', value: 'navedalam', url: 'https://github.com/navedalam' },
+    { icon: 'x' as const, label: 'X', value: '@navedalam', url: 'https://x.com/navedalam' },
     { icon: 'linkedin' as const, label: 'LinkedIn', value: 'navedalam', url: 'https://linkedin.com/in/navedalam' },
-    { icon: 'medium' as const, label: 'Medium', value: '@navedalam', url: 'https://medium.com/@navedalam' },
+    { icon: 'github' as const, label: 'GitHub', value: 'navedalam', url: 'https://github.com/navedalam' },
     { icon: 'telegram' as const, label: 'Telegram', value: '@navedalam', url: 'https://t.me/navedalam' },
+    { icon: 'medium' as const, label: 'Medium', value: '@navedalam', url: 'https://medium.com/@navedalam' },
   ],
   references: [
     { name: 'Alex Chen', role: 'Engineering Lead at Helius' },
@@ -86,10 +91,11 @@ const PROFILE_DEFAULTS = {
 }
 
 const SOCIAL_ICONS = {
-  github: RiGithubLine,
+  x: RiTwitterXLine,
   linkedin: RiLinkedinBoxLine,
-  medium: RiMediumLine,
+  github: RiGithubLine,
   telegram: RiTelegramLine,
+  medium: RiMediumLine,
 } as const
 
 interface SocialLink {
@@ -115,12 +121,14 @@ export default function TalentProfilePage() {
   const [openFor, setOpenFor] = useState(PROFILE_DEFAULTS.openFor)
   const [compensation, setCompensation] = useState(PROFILE_DEFAULTS.compensation)
 
-  const socialLinks: SocialLink[] = PROFILE_DEFAULTS.socials.map(s => ({
-    icon: SOCIAL_ICONS[s.icon],
-    label: s.label,
-    value: s.value,
-    url: s.url,
-  }))
+  const [socialLinks, setSocialLinks] = useState<SocialLink[]>(
+    PROFILE_DEFAULTS.socials.map(s => ({
+      icon: SOCIAL_ICONS[s.icon],
+      label: s.label,
+      value: s.value,
+      url: s.url,
+    }))
+  )
 
   const [desiredRoles, setDesiredRoles] = useState(PROFILE_DEFAULTS.desiredRoles)
   const [communities, setCommunities] = useState(PROFILE_DEFAULTS.communities)
@@ -128,8 +136,27 @@ export default function TalentProfilePage() {
   const proudestContribution = PROFILE_DEFAULTS.proudestContribution
   const contributionDetail = PROFILE_DEFAULTS.contributionDetail
 
-  // Edit modal
+  // Modals & dropdowns
   const [editOpen, setEditOpen] = useState(false)
+  const [addSocialOpen, setAddSocialOpen] = useState(false)
+  const [updateMenuOpen, setUpdateMenuOpen] = useState(false)
+  const updateMenuRef = useRef<HTMLDivElement>(null)
+  const coverInputRef = useRef<HTMLInputElement>(null)
+  const avatarInputRef = useRef<HTMLInputElement>(null)
+
+  // Cover & avatar state
+  const [coverUrl, setCoverUrl] = useState<string | null>(null)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+
+  // Close update menu on outside click
+  useEffect(() => {
+    if (!updateMenuOpen) return
+    const handle = (e: MouseEvent) => {
+      if (updateMenuRef.current && !updateMenuRef.current.contains(e.target as Node)) setUpdateMenuOpen(false)
+    }
+    document.addEventListener('mousedown', handle)
+    return () => document.removeEventListener('mousedown', handle)
+  }, [updateMenuOpen])
 
   // Save toast
   const [showSaved, setShowSaved] = useState(false)
@@ -216,20 +243,68 @@ export default function TalentProfilePage() {
 
           {/* Cover + Avatar */}
           <div className="relative">
-            <div className="h-[200px] bg-bg-primary flex items-center justify-center gap-2 text-text-muted/40 border-l-2 border-l-brand border-r-2 border-r-brand">
-              <RiImageLine size={32} />
-              <span className="text-sm font-medium">Cover Image</span>
-            </div>
+            {coverUrl ? (
+              <div className="h-[200px] border-l-2 border-l-brand border-r-2 border-r-brand overflow-hidden">
+                <img src={coverUrl} alt="Cover" className="w-full h-full object-cover" />
+              </div>
+            ) : (
+              <div className="h-[200px] bg-bg-primary flex items-center justify-center gap-2 text-text-muted/40 border-l-2 border-l-brand border-r-2 border-r-brand">
+                <RiImageLine size={32} />
+                <span className="text-sm font-medium">Cover Image</span>
+              </div>
+            )}
             {/* Avatar */}
             <div className="absolute -bottom-10 left-5">
-              <Avatar name={user?.name ?? 'User'} size="xl" square className="border-4 border-bg-card w-20 h-20 text-xl" />
+              {avatarUrl ? (
+                <div className="w-20 h-20 border-4 border-bg-card overflow-hidden shrink-0">
+                  <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                </div>
+              ) : (
+                <Avatar name={user?.name ?? 'User'} size="xl" square className="border-4 border-bg-card w-20 h-20 text-xl" />
+              )}
             </div>
-            {/* Update button */}
-            <div className="absolute bottom-0 right-5 translate-y-1/2">
-              <Button variant="secondary" size="sm" onClick={() => setEditOpen(true)}>
+            {/* Update dropdown */}
+            <div className="absolute bottom-0 right-5 translate-y-1/2" ref={updateMenuRef}>
+              <Button variant="secondary" size="sm" onClick={() => setUpdateMenuOpen(p => !p)}>
                 <RiPencilLine size={14} />
                 Update
+                <RiArrowDownSLine size={14} />
               </Button>
+              {updateMenuOpen && (
+                <div className="absolute right-0 bottom-full mb-2 w-48 bg-bg-card border border-border shadow-lg z-10">
+                  <button
+                    className="flex items-center gap-2 w-full px-3 py-2.5 text-sm text-text-secondary hover:bg-bg-secondary hover:text-text-primary transition-colors cursor-pointer"
+                    onClick={() => { coverInputRef.current?.click(); setUpdateMenuOpen(false) }}
+                  >
+                    <RiCameraLine size={16} />
+                    Update Cover
+                  </button>
+                  <button
+                    className="flex items-center gap-2 w-full px-3 py-2.5 text-sm text-text-secondary hover:bg-bg-secondary hover:text-text-primary transition-colors cursor-pointer"
+                    onClick={() => { avatarInputRef.current?.click(); setUpdateMenuOpen(false) }}
+                  >
+                    <RiUserSettingsLine size={16} />
+                    Update Avatar
+                  </button>
+                  <button
+                    className="flex items-center gap-2 w-full px-3 py-2.5 text-sm text-text-secondary hover:bg-bg-secondary hover:text-text-primary transition-colors cursor-pointer border-t border-border"
+                    onClick={() => { setEditOpen(true); setUpdateMenuOpen(false) }}
+                  >
+                    <RiPencilLine size={16} />
+                    Edit Profile
+                  </button>
+                </div>
+              )}
+              <input ref={coverInputRef} type="file" accept="image/*" className="hidden" onChange={e => {
+                const file = e.target.files?.[0]
+                if (file) setCoverUrl(URL.createObjectURL(file))
+                e.target.value = ''
+              }} />
+              <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={e => {
+                const file = e.target.files?.[0]
+                if (file) setAvatarUrl(URL.createObjectURL(file))
+                e.target.value = ''
+              }} />
             </div>
           </div>
 
@@ -300,21 +375,26 @@ export default function TalentProfilePage() {
 
             {/* Socials */}
             <SectionCard title="Socials">
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-wrap gap-2">
                 {socialLinks.map(link => (
                   <a
                     key={link.label}
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-3 px-3 py-2 hover:bg-bg-card transition-colors group"
+                    className="flex items-center gap-2 px-3 py-2 bg-bg-secondary hover:bg-bg-card border border-border transition-colors group"
                   >
-                    <link.icon size={16} className="text-text-muted shrink-0" />
-                    <span className="text-sm text-text-secondary flex-1">{link.label}</span>
-                    <span className="text-xs text-text-muted group-hover:text-brand transition-colors">{link.value}</span>
-                    <RiExternalLinkLine size={12} className="text-text-muted opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <link.icon size={16} className="text-text-muted group-hover:text-text-primary shrink-0" />
+                    <span className="text-sm text-text-secondary group-hover:text-text-primary">{link.value}</span>
                   </a>
                 ))}
+                <button
+                  onClick={() => setAddSocialOpen(true)}
+                  className="flex items-center gap-2 px-3 py-2 border border-dashed border-brand/40 hover:border-brand transition-colors cursor-pointer group"
+                >
+                  <RiAddLine size={16} className="text-brand/60 group-hover:text-brand" />
+                  <span className="text-sm text-brand/60 group-hover:text-brand">Add Link</span>
+                </button>
               </div>
             </SectionCard>
 
@@ -404,6 +484,17 @@ export default function TalentProfilePage() {
         </div>
       </div>
 
+      {/* Add Social Link Modal */}
+      {addSocialOpen && (
+        <AddSocialModal
+          onAdd={(link) => {
+            setSocialLinks(prev => [...prev, link])
+            setAddSocialOpen(false)
+          }}
+          onClose={() => setAddSocialOpen(false)}
+        />
+      )}
+
       {/* Edit Profile Modal */}
       {editOpen && (
         <EditProfileModal
@@ -435,6 +526,140 @@ function SectionCard({ title, children }: { title: string; children: React.React
         <h3 className="text-sm font-medium text-text-primary">{title}</h3>
       </div>
       <div className="p-4">{children}</div>
+    </div>
+  )
+}
+
+/* ─── Add Social Link Modal ─── */
+
+const SOCIAL_PLATFORM_OPTIONS = [
+  { key: 'x', label: 'X (Twitter)', icon: RiTwitterXLine, prefix: 'https://x.com/' },
+  { key: 'linkedin', label: 'LinkedIn', icon: RiLinkedinBoxLine, prefix: 'https://linkedin.com/in/' },
+  { key: 'github', label: 'GitHub', icon: RiGithubLine, prefix: 'https://github.com/' },
+  { key: 'telegram', label: 'Telegram', icon: RiTelegramLine, prefix: 'https://t.me/' },
+  { key: 'medium', label: 'Medium', icon: RiMediumLine, prefix: 'https://medium.com/@' },
+  { key: 'other', label: 'Other', icon: RiGlobalLine, prefix: '' },
+]
+
+function AddSocialModal({ onAdd, onClose }: {
+  onAdd: (link: SocialLink) => void
+  onClose: () => void
+}) {
+  const overlayRef = useRef<HTMLDivElement>(null)
+  const [platform, setPlatform] = useState(SOCIAL_PLATFORM_OPTIONS[0])
+  const [handle, setHandle] = useState('')
+  const [customUrl, setCustomUrl] = useState('')
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [onClose])
+
+  const handleSubmit = () => {
+    if (!handle.trim()) return
+    const url = platform.key === 'other' ? customUrl.trim() : `${platform.prefix}${handle.trim()}`
+    onAdd({
+      icon: platform.icon,
+      label: platform.label,
+      value: platform.key === 'other' ? handle.trim() : (platform.key === 'medium' ? `@${handle.trim()}` : handle.trim()),
+      url,
+    })
+  }
+
+  return (
+    <div
+      ref={overlayRef}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      onClick={e => { if (e.target === overlayRef.current) onClose() }}
+    >
+      <div className="absolute inset-0 bg-black/60" />
+      <div className="relative w-full max-w-sm bg-bg-secondary border border-border flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-border">
+          <h2 className="text-lg font-medium text-text-primary">Add Social Link</h2>
+          <button onClick={onClose} className="text-text-muted hover:text-text-primary transition-colors cursor-pointer p-1">
+            <RiCloseLine size={20} />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="p-4 flex flex-col gap-4">
+          {/* Platform selector */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs text-text-muted">Platform</label>
+            <div className="flex flex-wrap gap-2">
+              {SOCIAL_PLATFORM_OPTIONS.map(opt => {
+                const Icon = opt.icon
+                const selected = platform.key === opt.key
+                return (
+                  <button
+                    key={opt.key}
+                    onClick={() => setPlatform(opt)}
+                    className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs border transition-colors cursor-pointer ${
+                      selected
+                        ? 'border-brand bg-brand/10 text-brand'
+                        : 'border-border bg-bg-card text-text-muted hover:text-text-primary'
+                    }`}
+                  >
+                    <Icon size={14} />
+                    {opt.label}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Handle input */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs text-text-muted">
+              {platform.key === 'other' ? 'Label' : 'Username / Handle'}
+            </label>
+            <input
+              type="text"
+              value={handle}
+              onChange={e => setHandle(e.target.value)}
+              placeholder={platform.key === 'other' ? 'e.g. My Website' : 'e.g. navedalam'}
+              className="w-full px-3 py-2 bg-bg-card border border-border text-sm text-text-primary placeholder:text-text-muted outline-none focus:border-brand transition-colors"
+              onKeyDown={e => { if (e.key === 'Enter') handleSubmit() }}
+              autoFocus
+            />
+          </div>
+
+          {/* Custom URL for "Other" */}
+          {platform.key === 'other' && (
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs text-text-muted">URL</label>
+              <input
+                type="url"
+                value={customUrl}
+                onChange={e => setCustomUrl(e.target.value)}
+                placeholder="https://example.com"
+                className="w-full px-3 py-2 bg-bg-card border border-border text-sm text-text-primary placeholder:text-text-muted outline-none focus:border-brand transition-colors"
+                onKeyDown={e => { if (e.key === 'Enter') handleSubmit() }}
+              />
+            </div>
+          )}
+
+          {/* Preview */}
+          {handle.trim() && (
+            <div className="flex items-center gap-2 px-3 py-2 bg-bg-card border border-border">
+              <platform.icon size={16} className="text-text-muted" />
+              <span className="text-sm text-text-secondary">
+                {platform.key === 'medium' ? `@${handle.trim()}` : handle.trim()}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="flex justify-end gap-2 p-4 border-t border-border">
+          <Button variant="ghost" size="sm" onClick={onClose}>Cancel</Button>
+          <Button size="sm" onClick={handleSubmit} disabled={!handle.trim() || (platform.key === 'other' && !customUrl.trim())}>
+            Add Link
+          </Button>
+        </div>
+      </div>
     </div>
   )
 }
