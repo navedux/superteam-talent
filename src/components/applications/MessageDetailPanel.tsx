@@ -5,14 +5,13 @@ import {
   RiVideoLine,
   RiCalendarLine,
   RiTimeLine,
-  RiAlertLine,
+
   RiFileTextLine,
   RiExternalLinkLine,
 } from '@remixicon/react'
 import { Avatar } from '@/components/ui/Avatar'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
-import { cn } from '@/lib/cn'
 
 interface Message {
   id: string

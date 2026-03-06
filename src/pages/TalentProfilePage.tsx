@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import {
   RiMapPinLine,
@@ -310,7 +310,7 @@ export default function TalentProfilePage() {
               </div>
 
               {/* Current Role + Community Badge — right aligned on desktop, stacked on mobile */}
-              <div className="flex items-center gap-3 shrink-0 overflow-x-auto">
+              <div className="flex items-center gap-3 shrink-0 flex-wrap">
                 {roleTitle ? (
                   <div className="flex items-center gap-3 px-3 py-2.5 bg-bg-secondary border border-border shrink-0">
                     <Avatar name={PROFILE_DEFAULTS.company} size="sm" square />

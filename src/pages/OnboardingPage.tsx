@@ -204,6 +204,7 @@ export default function OnboardingPage() {
         variant="ghost"
         size="icon"
         onClick={handleClose}
+        aria-label="Close onboarding"
         className="absolute top-4 right-4 lg:top-6 lg:right-6 z-10"
       >
         <RiCloseLine size={18} />

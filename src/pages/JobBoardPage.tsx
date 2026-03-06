@@ -209,11 +209,13 @@ export default function JobBoardPage() {
             <motion.div key={job.id} variants={listItem} className="bg-bg-elevated p-1 flex flex-col">
               <div className="bg-bg-secondary p-3 flex flex-col gap-2.5">
                 {/* Header row */}
-                <div className="flex items-start gap-2.5">
-                  <Avatar name={job.company} size="lg" />
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-base font-medium text-text-primary truncate">{job.title}</h3>
-                    <p className="text-[13px] text-text-secondary">{job.company}</p>
+                <div className="flex flex-col sm:flex-row sm:items-start gap-2.5">
+                  <div className="flex items-start gap-2.5 flex-1 min-w-0">
+                    <Avatar name={job.company} size="lg" />
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-base font-medium text-text-primary truncate">{job.title}</h3>
+                      <p className="text-[13px] text-text-secondary">{job.company}</p>
+                    </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <Button variant="ghost" size="icon-sm" onClick={() => handleSave(job.id)} className={cn(savedJobs.has(job.id) ? 'text-brand' : 'text-text-muted')} title={savedJobs.has(job.id) ? 'Unsave' : 'Save'}><RiBookmarkLine size={18} /></Button>
@@ -248,7 +250,7 @@ export default function JobBoardPage() {
               </div>
 
               {/* Meta row */}
-              <div className="flex items-center justify-between px-3 py-2 flex-wrap gap-2">
+              <div className="flex items-center justify-between px-3 py-2 flex-wrap gap-x-3 gap-y-1">
                 <div className="flex items-center gap-3 md:gap-4 text-xs text-brand flex-wrap">
                   <span className="flex items-center gap-1">
                     <RiMapPinLine size={12} /> {job.location}
@@ -260,11 +262,11 @@ export default function JobBoardPage() {
                     <RiBriefcaseLine size={12} /> {job.type}
                   </span>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="flex items-center gap-1 text-xs text-text-muted">
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className="flex items-center gap-1 text-xs text-text-muted whitespace-nowrap">
                     <RiTimeLine size={12} /> Posted {job.postedAt}
                   </span>
-                  <Button variant="ghost" size="icon-sm" onClick={() => handleHide(job.id)}><RiEyeOffLine size={14} /> <span className="text-xs">Hide</span></Button>
+                  <Button variant="ghost" size="icon-sm" onClick={() => handleHide(job.id)} aria-label="Hide job"><RiEyeOffLine size={14} /> <span className="text-xs">Hide</span></Button>
                 </div>
               </div>
             </motion.div>

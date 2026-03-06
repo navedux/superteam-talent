@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { RiMailLine, RiLockLine, RiEyeLine, RiEyeOffLine, RiCloseLine, RiCheckLine, RiArrowLeftLine } from '@remixicon/react'
 import { useAuth } from '@/context/AuthContext'
 import { Button } from '@/components/ui/Button'
@@ -163,17 +163,19 @@ export function LoginForm() {
         <div className="flex gap-3 w-full">
           <button
             onClick={() => handleSocialLogin('GitHub')}
+            aria-label="Continue with GitHub"
             className="flex-1 flex items-center justify-center bg-bg-input border border-border py-2.5 shadow-input hover:bg-bg-card transition-colors cursor-pointer"
           >
-            <svg width="20" height="20" viewBox="0 0 16 16" fill="white">
+            <svg width="20" height="20" viewBox="0 0 16 16" fill="white" aria-hidden="true">
               <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/>
             </svg>
           </button>
           <button
             onClick={() => handleSocialLogin('Google')}
+            aria-label="Continue with Google"
             className="flex-1 flex items-center justify-center bg-bg-input border border-border py-2.5 shadow-input hover:bg-bg-card transition-colors cursor-pointer"
           >
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
               <path d="M17.8 10.2c0-.63-.06-1.24-.16-1.82H10v3.44h4.38a3.74 3.74 0 01-1.62 2.46v2.04h2.63A7.96 7.96 0 0017.8 10.2z" fill="#4285F4"/>
               <path d="M10 18c2.2 0 4.04-.73 5.39-1.97l-2.63-2.04c-.73.49-1.66.77-2.76.77-2.12 0-3.92-1.43-4.56-3.36H2.72v2.1A8 8 0 0010 18z" fill="#34A853"/>
               <path d="M5.44 11.4A4.8 4.8 0 015.18 10c0-.49.1-.96.26-1.4V6.5H2.72A8 8 0 002 10c0 1.29.31 2.51.72 3.5l2.72-2.1z" fill="#FBBC05"/>
@@ -204,9 +206,9 @@ export function LoginForm() {
             onChange={e => setPassword(e.target.value)}
             icon={<RiLockLine size={20} />}
             rightIcon={
-              showPassword
-                ? <RiEyeOffLine size={20} onClick={() => setShowPassword(false)} />
-                : <RiEyeLine size={20} onClick={() => setShowPassword(true)} />
+              <button type="button" onClick={() => setShowPassword(v => !v)} aria-label={showPassword ? 'Hide password' : 'Show password'}>
+                {showPassword ? <RiEyeOffLine size={20} /> : <RiEyeLine size={20} />}
+              </button>
             }
           />
 
@@ -255,9 +257,9 @@ export function LoginForm() {
       <motion.div variants={fadeIn} className="flex flex-col items-center gap-3">
         <div className="flex items-center gap-2 flex-wrap justify-center text-sm tracking-[-0.084px] leading-[1.43]">
           <span className="text-text-secondary">By continuing, you agree to our</span>
-          <span className="text-brand cursor-pointer hover:underline">Terms of Service</span>
+          <button type="button" className="text-brand cursor-pointer hover:underline">Terms of Service</button>
           <span className="text-text-secondary">and</span>
-          <span className="text-brand cursor-pointer hover:underline">Privacy Policy</span>
+          <button type="button" className="text-brand cursor-pointer hover:underline">Privacy Policy</button>
         </div>
         <p className="text-sm text-text-secondary tracking-[-0.084px] leading-[1.43]">&copy; 2025 SolanaHire. Built on Solana.</p>
       </motion.div>
