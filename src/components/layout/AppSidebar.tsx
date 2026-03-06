@@ -94,7 +94,7 @@ export function AppSidebar({ open, onClose }: AppSidebarProps) {
           </nav>
 
           {/* Support Card */}
-          <div className="mt-auto bg-bg-card p-3 flex flex-col gap-3">
+          <div className="bg-bg-card p-3 flex flex-col gap-3">
             <div className="flex items-center gap-2.5">
               <RiHeadphoneLine size={24} className="text-text-primary" />
               <span className="text-base font-medium text-text-primary">Need Help?</span>
@@ -113,7 +113,7 @@ export function AppSidebar({ open, onClose }: AppSidebarProps) {
           <Button
             variant="ghost"
             onClick={handleLogout}
-            className="justify-start hover:text-error hover:bg-error/10"
+            className="mt-auto justify-start hover:text-error hover:bg-error/10"
           >
             <RiLogoutBoxLine size={20} />
             <span>Logout</span>

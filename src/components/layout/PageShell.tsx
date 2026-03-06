@@ -1,8 +1,10 @@
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 import { RiMenuLine } from '@remixicon/react'
 import { AppSidebar } from './AppSidebar'
 import { Button } from '@/components/ui/Button'
 import { UserHeader } from '@/components/home/SupportCard'
+import { staggerContainer, fadeIn } from '@/lib/motion'
 import type { User } from '@/types/auth'
 
 interface PageShellProps {
@@ -30,10 +32,17 @@ export function PageShell({ user, children }: PageShellProps) {
           <img src="/ST_LOGO.webp" alt="Superteam Talent" className="h-4" />
         </div>
 
-        <div className="flex flex-col gap-4 border-t border-l border-r border-border overflow-auto">
-          <UserHeader user={user} />
+        <motion.div
+          className="flex flex-col gap-4 border-t border-l border-r border-border overflow-auto"
+          variants={staggerContainer}
+          initial="hidden"
+          animate="show"
+        >
+          <motion.div variants={fadeIn}>
+            <UserHeader user={user} />
+          </motion.div>
           {children}
-        </div>
+        </motion.div>
       </main>
     </div>
   )

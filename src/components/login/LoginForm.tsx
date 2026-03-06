@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router'
+import { motion, AnimatePresence } from 'framer-motion'
 import { RiMailLine, RiLockLine, RiEyeLine, RiEyeOffLine, RiCloseLine, RiCheckLine, RiArrowLeftLine } from '@remixicon/react'
 import { useAuth } from '@/context/AuthContext'
 import { Button } from '@/components/ui/Button'
@@ -7,6 +8,7 @@ import { Input } from '@/components/ui/Input'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { Divider } from '@/components/ui/Divider'
 import { ROUTES } from '@/lib/constants'
+import { staggerContainer, fadeUp, fadeIn } from '@/lib/motion'
 
 type View = 'login' | 'forgot' | 'forgot-sent'
 
@@ -19,14 +21,23 @@ export function LoginForm() {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [keepLoggedIn, setKeepLoggedIn] = useState(false)
-  const [error] = useState('')
+  const [error, setError] = useState('')
   const [toast, setToast] = useState('')
   const [forgotEmail, setForgotEmail] = useState('')
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    await login(email, password).catch(() => {})
-    navigate(ROUTES.HOME)
+    setError('')
+    if (!email.trim() || !password.trim()) {
+      setError('Please enter both email and password')
+      return
+    }
+    try {
+      await login(email, password)
+      navigate(ROUTES.HOME)
+    } catch {
+      setError('Invalid email or password. Please try again.')
+    }
   }
 
   const handleSocialLogin = (provider: string) => {
@@ -44,14 +55,19 @@ export function LoginForm() {
   // Forgot Password views
   if (view === 'forgot' || view === 'forgot-sent') {
     return (
-      <div className="flex flex-col justify-between h-full p-8">
+      <motion.div
+        className="flex flex-col justify-between h-full p-8"
+        variants={staggerContainer}
+        initial="hidden"
+        animate="show"
+      >
         {/* Header */}
-        <div className="flex items-center">
+        <motion.div variants={fadeIn} className="flex items-center">
           <img src="/ST_LOGO.webp" alt="Superteam Talent" className="h-5" />
-        </div>
+        </motion.div>
 
         {/* Center */}
-        <div className="flex flex-col items-center w-full max-w-[392px] mx-auto gap-6">
+        <motion.div variants={fadeUp} className="flex flex-col items-center w-full max-w-[392px] mx-auto gap-6">
           {view === 'forgot-sent' ? (
             <>
               <div className="w-12 h-12 bg-success/20 flex items-center justify-center">
@@ -99,18 +115,23 @@ export function LoginForm() {
               </form>
             </>
           )}
-        </div>
+        </motion.div>
 
         {/* Footer */}
-        <div className="flex flex-col items-center gap-3">
+        <motion.div variants={fadeIn} className="flex flex-col items-center gap-3">
           <p className="text-sm text-text-secondary tracking-[-0.084px] leading-[1.43]">&copy; 2025 SolanaHire. Built on Solana.</p>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     )
   }
 
   return (
-    <div className="flex flex-col justify-between h-full p-8 relative">
+    <motion.div
+      className="flex flex-col justify-between h-full p-8 relative"
+      variants={staggerContainer}
+      initial="hidden"
+      animate="show"
+    >
       {/* Toast */}
       {toast && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-bg-card border border-border px-4 py-2 text-sm text-text-primary z-50 flex items-center gap-2 shadow-lg">
@@ -122,12 +143,12 @@ export function LoginForm() {
       )}
 
       {/* Header - Logo */}
-      <div className="flex items-center">
+      <motion.div variants={fadeIn} className="flex items-center">
         <img src="/ST_LOGO.webp" alt="Superteam Talent" className="h-5" />
-      </div>
+      </motion.div>
 
       {/* Center - Form content, exactly 392px wide */}
-      <div className="flex flex-col items-center w-full max-w-[392px] mx-auto gap-6">
+      <motion.div variants={fadeUp} className="flex flex-col items-center w-full max-w-[392px] mx-auto gap-6">
         {/* Title Section */}
         <div className="flex flex-col gap-1 w-full">
           <div className="flex flex-col gap-3 items-center">
@@ -228,10 +249,10 @@ export function LoginForm() {
             </Button>
           </div>
         </form>
-      </div>
+      </motion.div>
 
       {/* Footer — centered, 12px gap between rows */}
-      <div className="flex flex-col items-center gap-3">
+      <motion.div variants={fadeIn} className="flex flex-col items-center gap-3">
         <div className="flex items-center gap-2 flex-wrap justify-center text-sm tracking-[-0.084px] leading-[1.43]">
           <span className="text-text-secondary">By continuing, you agree to our</span>
           <span className="text-brand cursor-pointer hover:underline">Terms of Service</span>
@@ -239,7 +260,7 @@ export function LoginForm() {
           <span className="text-brand cursor-pointer hover:underline">Privacy Policy</span>
         </div>
         <p className="text-sm text-text-secondary tracking-[-0.084px] leading-[1.43]">&copy; 2025 SolanaHire. Built on Solana.</p>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }

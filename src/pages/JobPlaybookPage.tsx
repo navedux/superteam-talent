@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { motion } from 'framer-motion'
 import { RiTimeLine, RiEyeLine, RiBookmarkLine, RiArrowRightSLine, RiChat3Line, RiExternalLinkLine, RiBookOpenLine } from '@remixicon/react'
 import { PageShell } from '@/components/layout/PageShell'
 import { Badge } from '@/components/ui/Badge'
@@ -8,6 +9,7 @@ import { TabGroup } from '@/components/ui/TabGroup'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { useAuth } from '@/context/AuthContext'
 import { cn } from '@/lib/cn'
+import { fadeUp, staggerContainer, listItem } from '@/lib/motion'
 
 const categories = ['All Articles', 'Pre-Application', 'Application', 'Interviews', 'Negotiations']
 
@@ -198,7 +200,7 @@ export default function JobPlaybookPage() {
 
   return (
     <PageShell user={user}>
-      <div className="flex flex-col gap-4 px-4 md:px-8">
+      <motion.div variants={fadeUp} className="flex flex-col gap-4 px-4 md:px-8">
         {/* Title + Search row */}
         <div className="flex flex-col lg:flex-row items-start justify-between gap-4">
           <div className="flex flex-col gap-1">
@@ -238,17 +240,18 @@ export default function JobPlaybookPage() {
 
         {/* Category Tabs */}
         <TabGroup tabs={categoryTabs} activeTab={activeCategory} onChange={setActiveCategory} />
-      </div>
+      </motion.div>
 
       {/* Article Grid */}
-      <div className="px-4 md:px-8 pb-8">
+      <motion.div variants={fadeUp} className="px-4 md:px-8 pb-8">
         {filteredArticles.length === 0 ? (
           <EmptyState icon={RiBookOpenLine} message="No articles match your search" actionLabel="Reset Filters" onAction={() => { setSearchQuery(''); setActiveCategory('All Articles') }} />
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <motion.div variants={staggerContainer} initial="hidden" animate="show" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredArticles.map(article => (
-              <div
+              <motion.div
                 key={article.id}
+                variants={listItem}
                 onClick={() => openArticle(article.url)}
                 className="bg-bg-elevated flex flex-col cursor-pointer border border-border hover:bg-bg-card hover:border-text-muted/30 transition-all duration-150 group"
               >
@@ -273,11 +276,11 @@ export default function JobPlaybookPage() {
                   )}
                   <span className="ml-auto">{article.date}</span>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         )}
-      </div>
+      </motion.div>
     </PageShell>
   )
 }

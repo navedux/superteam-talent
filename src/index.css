@@ -40,6 +40,14 @@
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
   }
+  @keyframes slideInRight {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
 }
 
 @layer base {
@@ -67,6 +75,37 @@
   ::selection {
     background-color: var(--color-brand);
     color: white;
+  }
+
+  /* Salary range slider */
+  .salary-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    pointer-events: none;
+    cursor: pointer;
+  }
+  .salary-slider-thumb::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    background: var(--color-brand);
+    border: 2px solid var(--color-bg-card);
+    cursor: pointer;
+    pointer-events: all;
+    position: relative;
+    z-index: 1;
+  }
+  .salary-slider-thumb::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    background: var(--color-brand);
+    border: 2px solid var(--color-bg-card);
+    border-radius: 0;
+    cursor: pointer;
+    pointer-events: all;
+    position: relative;
+    z-index: 1;
   }
 
   /* Hide scrollbars globally while keeping scroll functionality */

@@ -87,7 +87,7 @@ export function UserHeader({ user }: UserHeaderProps) {
         <Avatar name={user.name} size="lg" />
         <div className="flex flex-col gap-1 flex-1 min-w-0">
           <h2 className="text-lg font-medium text-text-primary tracking-[-0.27px]">{user.name}</h2>
-          <p className="text-sm text-text-secondary">Welcome back to Talent</p>
+          <p className="text-sm text-text-secondary">Welcome back</p>
         </div>
         <div className="flex items-center gap-1">
           <Button variant="ghost" size="icon" onClick={() => setSearchOpen(true)} title="Search (⌘K)">

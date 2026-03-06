@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion'
 import { Avatar } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
 import {
@@ -7,6 +8,7 @@ import {
   RiBookmarkLine,
   RiIndeterminateCircleLine,
 } from '@remixicon/react'
+import { hoverLift } from '@/lib/motion'
 import type { Job } from '@/types/jobs'
 
 interface JobCardProps {
@@ -15,7 +17,12 @@ interface JobCardProps {
 
 export function JobCard({ job }: JobCardProps) {
   return (
-    <div className="bg-bg-elevated p-1 flex flex-col">
+    <motion.div
+      className="bg-bg-elevated p-1 flex flex-col"
+      variants={hoverLift}
+      initial="rest"
+      whileHover="hover"
+    >
       {/* Top section */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 bg-bg-secondary p-3">
         <div className="flex items-center gap-2.5 flex-1 min-w-0">
@@ -51,6 +58,6 @@ export function JobCard({ job }: JobCardProps) {
           Hide
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }

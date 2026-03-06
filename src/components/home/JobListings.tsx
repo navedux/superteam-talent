@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/Button'
 import { JobCard } from './JobCard'
-import { RiBriefcase3Line, RiArrowRightSLine } from '@remixicon/react'
+import { RiBriefcase3Line, RiArrowRightSLine, RiSearchLine } from '@remixicon/react'
 import { API_ENDPOINTS, ROUTES } from '@/lib/constants'
+import { staggerContainer, listItem, fadeIn } from '@/lib/motion'
 import type { Job } from '@/types/jobs'
 
 export function JobListings() {
@@ -38,15 +40,51 @@ export function JobListings() {
         </div>
 
         {/* Job Cards */}
-        <div className="flex flex-col gap-4">
+        <AnimatePresence mode="wait">
           {loading ? (
-            Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="bg-bg-elevated p-4 h-24 animate-pulse" />
-            ))
+            <motion.div
+              key="loading"
+              className="flex flex-col gap-4"
+              variants={fadeIn}
+              initial="hidden"
+              animate="show"
+              exit="hidden"
+            >
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="bg-bg-elevated p-4 h-24 animate-pulse" />
+              ))}
+            </motion.div>
+          ) : jobs.length === 0 ? (
+            <motion.div
+              key="empty"
+              className="flex flex-col items-center gap-2 py-10"
+              variants={fadeIn}
+              initial="hidden"
+              animate="show"
+            >
+              <RiSearchLine size={24} className="text-text-muted/40" />
+              <p className="text-sm text-text-muted">No open positions right now</p>
+              <p className="text-xs text-text-muted/60">Check back soon for new opportunities</p>
+              <Button variant="secondary" size="sm" onClick={() => navigate(ROUTES.JOBS)} className="mt-1">
+                Browse Job Board
+              </Button>
+            </motion.div>
           ) : (
-            jobs.map(job => <JobCard key={job.id} job={job} />)
+            <motion.div
+              key="jobs"
+              className="flex flex-col gap-4"
+              variants={staggerContainer}
+              initial="hidden"
+              animate="show"
+            >
+              {jobs.map(job => (
+                <motion.div key={job.id} variants={listItem}>
+                  <JobCard job={job} />
+                </motion.div>
+              ))}
+            </motion.div>
           )}
-        </div>
+        </AnimatePresence>
       </div>
     </div>
   )

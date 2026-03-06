@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
+import { motion, AnimatePresence } from 'framer-motion'
 import { RiCloseLine } from '@remixicon/react'
 import { useMultiStepForm } from '@/hooks/useMultiStepForm'
 import { OnboardingSidebar } from '@/components/layout/OnboardingSidebar'
@@ -11,6 +12,7 @@ import { StepCommunity } from '@/components/onboarding/StepCommunity'
 import { Button } from '@/components/ui/Button'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { ONBOARDING_STEPS, ROUTES, API_ENDPOINTS } from '@/lib/constants'
+import { fadeUp, DURATION, EASE_OUT } from '@/lib/motion'
 import type { OnboardingData } from '@/types/onboarding'
 
 const initialData: OnboardingData = {
@@ -219,9 +221,17 @@ export default function OnboardingPage() {
         </div>
         <div className="py-4 lg:py-8 px-4 md:px-8 lg:px-[180px] xl:px-[240px] flex flex-col gap-4 lg:gap-6">
           {/* Step Content */}
-          <div>
-            {renderStep()}
-          </div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentStep}
+              variants={fadeUp}
+              initial="hidden"
+              animate="show"
+              exit={{ opacity: 0, y: -10, transition: { duration: DURATION.fast, ease: EASE_OUT } }}
+            >
+              {renderStep()}
+            </motion.div>
+          </AnimatePresence>
 
           {/* Submit Error */}
           {submitError && (

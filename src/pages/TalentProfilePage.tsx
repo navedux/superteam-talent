@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
+import { motion } from 'framer-motion'
 import {
   RiMapPinLine,
   RiBriefcaseLine,
@@ -17,13 +18,11 @@ import {
   RiDeleteBinLine,
   RiExternalLinkLine,
   RiArrowDownSLine,
-  RiLockLine,
   RiTwitterXLine,
   RiGlobalLine,
   RiCameraLine,
   RiUserSettingsLine,
   RiShieldStarLine,
-  RiAwardLine,
   RiVideoLine,
   RiPlayCircleLine,
   RiUploadLine,
@@ -33,15 +32,14 @@ import { PageShell } from '@/components/layout/PageShell'
 import { Avatar } from '@/components/ui/Avatar'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
-import { ProgressBar } from '@/components/ui/ProgressBar'
 import { useAuth } from '@/context/AuthContext'
+import { fadeUp } from '@/lib/motion'
 
-const JOB_STATUS_OPTIONS = ['Actively Looking', 'Open to new jobs', 'Not looking', 'Casually browsing']
+const JOB_STATUS_OPTIONS = ['Actively Looking', 'Not looking', 'Casually browsing']
 
 const statusBadgeVariant = (status: string): 'success' | 'brand' | 'error' | 'default' => {
   switch (status) {
     case 'Actively Looking': return 'success'
-    case 'Open to new jobs': return 'brand'
     case 'Not looking': return 'error'
     case 'Casually browsing': return 'default'
     default: return 'default'
@@ -59,14 +57,16 @@ const LOCATION_OPTIONS = [
   'São Paulo, Brazil', 'Buenos Aires, Argentina', 'Mexico City, Mexico',
   'Lagos, Nigeria', 'Nairobi, Kenya', 'Cape Town, South Africa',
 ]
-const COMPENSATION_OPTIONS = [
-  '$50k – $80k / year',
-  '$80k – $120k / year',
-  '$120k – $170k / year',
-  '$170k – $210k / year',
-  '$210k – $300k / year',
-  '$300k+ / year',
-]
+const SALARY_MIN = 10000
+const SALARY_MAX = 500000
+const SALARY_STEP = 5000
+
+function formatSalaryK(v: number) {
+  return v >= 1000 ? `$${Math.round(v / 1000)}k` : `$${v.toLocaleString()}`
+}
+function formatSalaryFull(v: number) {
+  return `$${v.toLocaleString()}`
+}
 
 /* ─── Default Profile Data ───
    Update these values to change what shows on the profile.
@@ -78,19 +78,17 @@ const PROFILE_DEFAULTS = {
   availability: 'Actively Looking',
   openFor: 'Full-Time Roles',
   location: 'San Francisco, CA',
-  compensation: '$170k – $210k / year',
-  desiredRoles: ['Product Design', 'UX Research', 'Design Systems'],
+  salaryMin: 170000,
+  salaryMax: 210000,
+  primaryRole: 'Product Design',
+  secondaryRoles: ['UX Research', 'Design Systems'],
+  skills: ['Figma', 'React', 'TypeScript', 'Tailwind CSS', 'Prototyping', 'User Research', 'Design Systems', 'Framer Motion'],
   // Superteam communities — detected from wallet address
   walletAddress: '7xKXq...9fGh',
-  superteamCommunities: ['Superteam Germany', 'Superteam India'],
+  superteamCommunity: 'Superteam Germany',
+  superteamEarnUrl: 'https://earn.superteam.fun/t/navedalam',
   // Endorsements
-  scoutEndorsements: [
-    { name: 'Kash Dhanda', role: 'Talent Scout, Superteam', comment: 'Excellent design engineer with strong Solana ecosystem knowledge. Highly recommended for product design roles.', date: '2025-11-15' },
-    { name: 'Akshay BD', role: 'Talent Scout Lead, Superteam', comment: 'Strong technical skills paired with design sensibility. Great communicator.', date: '2025-10-02' },
-  ],
-  otherEndorsements: [
-    { platform: 'LinkedIn', endorser: 'Sarah Kim', role: 'Product Manager at Jupiter', text: 'Naved consistently delivers high-quality work. A pleasure to collaborate with.' },
-  ],
+  scoutEndorsement: { name: 'Kash Dhanda', role: 'Talent Scout, Superteam', comment: 'Excellent design engineer with strong Solana ecosystem knowledge. Highly recommended for product design roles.', date: '2025-11-15' } as { name: string; role: string; comment: string; date: string } | null,
   // Intro video
   introVideoUrl: null as string | null,
   proudestContribution: 'DeFi Protocol Dashboard',
@@ -132,15 +130,19 @@ export default function TalentProfilePage() {
   const { user } = useAuth()
 
   // Profile state — seeded from PROFILE_DEFAULTS (edit the object above to change defaults)
-  const [bio, setBio] = useState(PROFILE_DEFAULTS.bio)
+  // ── Toggle to test empty states (set to true to see all empty states) ──
+  const TEST_EMPTY = false
+
+  const [bio, setBio] = useState(TEST_EMPTY ? '' : PROFILE_DEFAULTS.bio)
   const [location, setLocation] = useState(PROFILE_DEFAULTS.location)
-  const [roleTitle, setRoleTitle] = useState(PROFILE_DEFAULTS.roleTitle)
+  const [roleTitle, setRoleTitle] = useState(TEST_EMPTY ? '' : PROFILE_DEFAULTS.roleTitle)
   const [availability, setAvailability] = useState(PROFILE_DEFAULTS.availability)
   const [openFor, setOpenFor] = useState(PROFILE_DEFAULTS.openFor)
-  const [compensation, setCompensation] = useState(PROFILE_DEFAULTS.compensation)
+  const [salaryRange, setSalaryRange] = useState<[number, number]>([PROFILE_DEFAULTS.salaryMin, PROFILE_DEFAULTS.salaryMax])
+  const compensation = `${formatSalaryK(salaryRange[0])} – ${formatSalaryK(salaryRange[1])} / year`
 
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>(
-    PROFILE_DEFAULTS.socials.map(s => ({
+    TEST_EMPTY ? [] : PROFILE_DEFAULTS.socials.map(s => ({
       icon: SOCIAL_ICONS[s.icon],
       label: s.label,
       value: s.value,
@@ -148,15 +150,19 @@ export default function TalentProfilePage() {
     }))
   )
 
-  const [desiredRoles, setDesiredRoles] = useState(PROFILE_DEFAULTS.desiredRoles)
-  const [superteamCommunities] = useState(PROFILE_DEFAULTS.superteamCommunities)
-  const [scoutEndorsements] = useState(PROFILE_DEFAULTS.scoutEndorsements)
-  const [otherEndorsements, setOtherEndorsements] = useState(PROFILE_DEFAULTS.otherEndorsements)
+  const [primaryRole, setPrimaryRole] = useState(TEST_EMPTY ? '' : PROFILE_DEFAULTS.primaryRole)
+  const [secondaryRoles, setSecondaryRoles] = useState(TEST_EMPTY ? [] : PROFILE_DEFAULTS.secondaryRoles)
+  const [skills, setSkills] = useState(TEST_EMPTY ? [] : PROFILE_DEFAULTS.skills)
+  const [walletVerified, setWalletVerified] = useState(TEST_EMPTY ? false : true)
+  const [superteamCommunity] = useState(PROFILE_DEFAULTS.superteamCommunity)
+  const [scoutEndorsement] = useState(TEST_EMPTY ? null : PROFILE_DEFAULTS.scoutEndorsement)
   const [introVideoUrl, setIntroVideoUrl] = useState(PROFILE_DEFAULTS.introVideoUrl)
+  const [hasResume, setHasResume] = useState(TEST_EMPTY ? false : true)
+  const resumeInputRef = useRef<HTMLInputElement>(null)
   const [portfolio, setPortfolio] = useState<PortfolioItem[]>([])
-  const [addEndorsementOpen, setAddEndorsementOpen] = useState(false)
-  const proudestContribution = PROFILE_DEFAULTS.proudestContribution
-  const contributionDetail = PROFILE_DEFAULTS.contributionDetail
+  const [proudestContribution, setProudestContribution] = useState(TEST_EMPTY ? '' : PROFILE_DEFAULTS.proudestContribution)
+  const [contributionDetail, setContributionDetail] = useState(TEST_EMPTY ? '' : PROFILE_DEFAULTS.contributionDetail)
+  const [references, setReferences] = useState(TEST_EMPTY ? [] : PROFILE_DEFAULTS.references)
 
   // Modals & dropdowns
   const [editOpen, setEditOpen] = useState(false)
@@ -200,23 +206,6 @@ export default function TalentProfilePage() {
     setPortfolio(prev => prev.filter(p => p.id !== id))
   }
 
-  const profileCompletion = useMemo(() => {
-    const fields = [
-      !!bio.trim(),
-      !!roleTitle.trim(),
-      !!availability,
-      !!openFor,
-      !!location,
-      !!compensation,
-      socialLinks.length > 0,
-      desiredRoles.length > 0,
-      portfolio.length > 0,
-      !!introVideoUrl,
-      !!coverUrl,
-      !!avatarUrl,
-    ]
-    return Math.round((fields.filter(Boolean).length / fields.length) * 100)
-  }, [bio, roleTitle, availability, openFor, location, compensation, socialLinks, desiredRoles, portfolio, introVideoUrl, coverUrl, avatarUrl])
 
   return (
     <PageShell user={user}>
@@ -228,49 +217,7 @@ export default function TalentProfilePage() {
         </div>
       )}
 
-      <div className="flex flex-col gap-6 px-4 md:px-8 pb-8">
-
-        {/* ── Profile Completion ── */}
-        <div className="border border-border p-5 flex flex-col gap-4">
-          {/* Top row: title + current level badge */}
-          <div className="flex items-start justify-between">
-            <div className="flex flex-col gap-1">
-              <span className="text-sm font-medium text-text-primary">Profile Completion</span>
-              <span className="text-xs text-text-muted">Complete your profile to increase visibility</span>
-            </div>
-            <Badge variant="brand">Eligible for Introduction</Badge>
-          </div>
-
-          {/* Progress bar with percentage */}
-          <div className="flex items-center gap-3">
-            <ProgressBar value={profileCompletion} size="sm" className="flex-1" />
-            <span className="text-sm font-medium text-brand">{profileCompletion}%</span>
-          </div>
-
-          {/* Level steps */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            {/* Level 1 — completed */}
-            <div className="flex items-center gap-2 px-3 py-2 bg-brand/10 border border-brand/30">
-              <span className="text-xs font-medium text-brand flex-1">
-                Level 1 → Eligible for Introduction
-              </span>
-              <RiCheckLine size={14} className="text-brand shrink-0" />
-            </div>
-            {/* Level 2 — next */}
-            <div className="flex items-center gap-2 px-3 py-2 bg-brand/5 border border-brand/20">
-              <span className="text-xs font-medium text-brand/70 flex-1">
-                Next &bull; Level 2 (80%) → Eligible for [Benefit]
-              </span>
-            </div>
-            {/* Level 3 — locked */}
-            <div className="flex items-center gap-2 px-3 py-2 bg-bg-card border border-border">
-              <span className="text-xs text-text-muted flex-1">
-                Level 3 (100%) → Eligible for Talent Spotlight
-              </span>
-              <RiLockLine size={14} className="text-text-muted shrink-0" />
-            </div>
-          </div>
-        </div>
+      <motion.div variants={fadeUp} className="flex flex-col gap-6 px-4 md:px-8 pb-8">
 
         {/* ── Profile Header Card ── */}
         <div className="flex flex-col">
@@ -349,31 +296,53 @@ export default function TalentProfilePage() {
           </div>
 
           {/* Info */}
-          <div className="pt-14 pb-5 flex flex-col gap-3">
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex flex-col gap-1 min-w-0">
-                <h1 className="text-lg font-medium text-text-primary">{user?.name ?? 'Naved Alam'}</h1>
-                <p className="text-[13px] text-text-secondary leading-relaxed line-clamp-2">{bio}</p>
+          <div className="pt-14 pb-4 flex flex-col gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-6">
+              <div className="flex flex-col gap-1.5 min-w-0 flex-1">
+                <h1 className="text-xl font-semibold text-text-primary tracking-tight">{user?.name ?? 'Naved Alam'}</h1>
+                {bio ? (
+                  <p className="text-[13px] text-text-secondary leading-relaxed line-clamp-2">{bio}</p>
+                ) : (
+                  <button onClick={() => setEditOpen(true)} className="text-[13px] text-text-muted italic hover:text-brand transition-colors cursor-pointer text-left">
+                    Add a short bio to introduce yourself...
+                  </button>
+                )}
               </div>
 
-              {/* Current Role — right aligned */}
-              <div className="flex items-center gap-3 bg-bg-secondary px-3 py-3 shrink-0">
-                <Avatar name={PROFILE_DEFAULTS.company} size="sm" square />
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-sm text-text-primary">{roleTitle}</span>
-                  <span className="text-xs text-text-muted">{PROFILE_DEFAULTS.company}</span>
-                </div>
+              {/* Current Role + Community Badge — right aligned on desktop, stacked on mobile */}
+              <div className="flex items-center gap-3 shrink-0 overflow-x-auto">
+                {roleTitle ? (
+                  <div className="flex items-center gap-3 px-3 py-2.5 bg-bg-secondary border border-border shrink-0">
+                    <Avatar name={PROFILE_DEFAULTS.company} size="sm" square />
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-sm font-medium text-text-primary">{roleTitle}</span>
+                      <span className="text-xs text-text-muted">{PROFILE_DEFAULTS.company}</span>
+                    </div>
+                  </div>
+                ) : (
+                  <button onClick={() => setEditOpen(true)} className="flex items-center gap-2 px-3 py-2.5 border border-dashed border-border hover:border-brand/40 transition-colors cursor-pointer shrink-0">
+                    <RiBriefcaseLine size={16} className="text-text-muted" />
+                    <span className="text-xs text-text-muted">Add current role</span>
+                  </button>
+                )}
+                {superteamCommunity && (
+                  <div className="flex items-center gap-2 px-3 py-2.5 bg-brand/10 border border-brand/30 self-stretch shrink-0">
+                    <img src="/Logo ST.webp" alt="" className="h-3.5" />
+                    <span className="text-xs font-medium text-brand">{superteamCommunity}</span>
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Metadata row — click any item to edit inline */}
-            <div className="flex items-center gap-3 flex-wrap text-xs text-text-secondary">
+            <div className="flex items-center gap-2 flex-wrap text-xs text-text-secondary">
               <InlineSelect
                 value={availability}
                 onChange={setAvailability}
                 options={JOB_STATUS_OPTIONS}
                 render={v => <Badge variant={statusBadgeVariant(v)}>{v}</Badge>}
               />
+              <span className="text-border">|</span>
               <InlineSelect
                 value={location}
                 onChange={setLocation}
@@ -381,18 +350,17 @@ export default function TalentProfilePage() {
                 icon={<RiMapPinLine size={12} />}
                 searchable
               />
+              <span className="text-border">|</span>
               <InlineSelect
                 value={openFor}
                 onChange={setOpenFor}
                 options={OPEN_FOR_OPTIONS}
                 icon={<RiBriefcaseLine size={12} />}
               />
-              <InlineSelectWithCustom
-                value={compensation}
-                onChange={setCompensation}
-                options={COMPENSATION_OPTIONS}
-                icon={<RiMoneyDollarCircleLine size={12} />}
-                placeholder="e.g. $150k – $200k / year"
+              <span className="text-border">|</span>
+              <InlineSalarySlider
+                value={salaryRange}
+                onChange={setSalaryRange}
               />
             </div>
           </div>
@@ -404,127 +372,169 @@ export default function TalentProfilePage() {
           {/* Left Column */}
           <div className="flex flex-col gap-6">
 
-            {/* Desired Roles */}
-            <SectionCard title="Desired Roles">
-              <div className="flex flex-wrap gap-2">
-                {desiredRoles.map(role => (
-                  <Badge key={role} variant="default">{role}</Badge>
-                ))}
-              </div>
+            {/* Desired Roles & Skills */}
+            <SectionCard title="Desired Roles & Skills">
+              {!primaryRole && secondaryRoles.length === 0 && skills.length === 0 ? (
+                <div className="flex flex-col items-center gap-2 py-6 text-center">
+                  <RiBriefcaseLine size={24} className="text-text-muted/40" />
+                  <p className="text-sm text-text-muted">Add your desired roles and skills to help recruiters find you.</p>
+                  <Button variant="secondary" size="sm" onClick={() => setEditOpen(true)}>Add Roles & Skills</Button>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-4">
+                  {/* Roles */}
+                  <div className="flex flex-col gap-2">
+                    {primaryRole ? (
+                      <div className="flex items-center gap-2">
+                        <Badge variant="brand">{primaryRole}</Badge>
+                        <span className="text-[10px] font-medium uppercase tracking-wider text-brand">Primary</span>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-text-muted italic">No primary role set</p>
+                    )}
+                    {secondaryRoles.length > 0 ? (
+                      <div className="flex flex-wrap items-center gap-2">
+                        {secondaryRoles.map(role => (
+                          <Badge key={role} variant="default">{role}</Badge>
+                        ))}
+                        <span className="text-[10px] font-medium uppercase tracking-wider text-text-muted">Secondary</span>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-text-muted italic">No secondary roles set</p>
+                    )}
+                  </div>
+
+                  {skills.length > 0 && (
+                    <>
+                      <div className="border-t border-border" />
+                      <div className="flex flex-wrap gap-1.5">
+                        {skills.map(skill => (
+                          <span key={skill} className="text-xs px-2 py-1 bg-white/5 text-text-secondary border border-white/5">
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
             </SectionCard>
 
             {/* Socials */}
             <SectionCard title="Socials">
-              <div className="flex flex-wrap gap-2">
-                {socialLinks.map(link => (
-                  <a
-                    key={link.label}
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-3 py-2 bg-bg-secondary hover:bg-bg-card border border-border transition-colors group"
+              {socialLinks.length === 0 ? (
+                <div className="flex flex-col items-center gap-2 py-6 text-center">
+                  <RiGlobalLine size={24} className="text-text-muted/40" />
+                  <p className="text-sm text-text-muted">Add your social links so teams can learn more about you.</p>
+                  <Button variant="secondary" size="sm" onClick={() => setAddSocialOpen(true)}>
+                    <RiAddLine size={14} />
+                    Add Link
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {socialLinks.map(link => (
+                    <a
+                      key={link.label}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-3 py-2 bg-bg-secondary hover:bg-bg-card border border-border transition-colors group"
+                    >
+                      <link.icon size={16} className="text-text-muted group-hover:text-text-primary shrink-0" />
+                      <span className="text-sm text-text-secondary group-hover:text-text-primary">{link.value}</span>
+                    </a>
+                  ))}
+                  <button
+                    onClick={() => setAddSocialOpen(true)}
+                    className="flex items-center gap-2 px-3 py-2 border border-dashed border-brand/40 hover:border-brand transition-colors cursor-pointer group"
                   >
-                    <link.icon size={16} className="text-text-muted group-hover:text-text-primary shrink-0" />
-                    <span className="text-sm text-text-secondary group-hover:text-text-primary">{link.value}</span>
-                  </a>
-                ))}
-                <button
-                  onClick={() => setAddSocialOpen(true)}
-                  className="flex items-center gap-2 px-3 py-2 border border-dashed border-brand/40 hover:border-brand transition-colors cursor-pointer group"
-                >
-                  <RiAddLine size={16} className="text-brand/60 group-hover:text-brand" />
-                  <span className="text-sm text-brand/60 group-hover:text-brand">Add Link</span>
-                </button>
-              </div>
+                    <RiAddLine size={16} className="text-brand/60 group-hover:text-brand" />
+                    <span className="text-sm text-brand/60 group-hover:text-brand">Add Link</span>
+                  </button>
+                </div>
+              )}
             </SectionCard>
 
-            {/* Superteam Communities (wallet-detected) */}
-            <SectionCard title="Superteam Communities">
-              {superteamCommunities.length > 0 ? (
+            {/* Superteam Community Verification */}
+            <SectionCard title="Superteam Community">
+              {walletVerified ? (
                 <div className="flex flex-col gap-3">
-                  <div className="flex flex-wrap gap-2">
-                    {superteamCommunities.map(c => (
-                      <div
-                        key={c}
-                        className="flex items-center gap-2 px-3 py-2 bg-brand/10 border border-brand/30"
-                      >
-                        <img src="/ST_LOGO.webp" alt="" className="h-3.5 opacity-80" />
-                        <span className="text-sm font-medium text-brand">{c}</span>
-                      </div>
-                    ))}
+                  <div className="flex items-center gap-3 p-3 bg-success/5 border border-success/20">
+                    <div className="flex items-center justify-center w-8 h-8 bg-success/15 shrink-0">
+                      <RiCheckLine size={16} className="text-success" />
+                    </div>
+                    <div className="flex flex-col gap-0.5 min-w-0">
+                      <span className="text-sm font-medium text-text-primary">Wallet Verified</span>
+                      <span className="text-xs text-text-muted font-mono">{PROFILE_DEFAULTS.walletAddress}</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-text-muted">
-                    <RiWallet3Line size={12} />
-                    <span>Verified via wallet {PROFILE_DEFAULTS.walletAddress}</span>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-brand/10 border border-brand/20">
+                      <img src="/Logo ST.webp" alt="" className="h-3 opacity-80" />
+                      <span className="text-xs font-medium text-brand">{superteamCommunity}</span>
+                    </div>
+                    <a
+                      href={PROFILE_DEFAULTS.superteamEarnUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-3 py-1.5 bg-bg-secondary border border-border hover:border-brand/40 transition-colors group"
+                    >
+                      <img src="/Logo ST.webp" alt="" className="h-3 opacity-60 group-hover:opacity-80" />
+                      <span className="text-xs text-text-secondary group-hover:text-text-primary">Superteam Earn Profile</span>
+                      <RiExternalLinkLine size={10} className="text-text-muted group-hover:text-text-primary ml-auto" />
+                    </a>
                   </div>
                 </div>
               ) : (
-                <p className="text-sm text-text-muted">No Superteam community memberships detected.</p>
+                <div className="flex flex-col gap-3">
+                  <p className="text-sm text-text-secondary">
+                    Link your Solana wallet to verify your Superteam community membership and unlock your badge.
+                  </p>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => setWalletVerified(true)}
+                    className="self-start"
+                  >
+                    <RiWallet3Line size={14} />
+                    Verify Wallet
+                  </Button>
+                </div>
               )}
             </SectionCard>
 
             {/* Endorsements */}
             <SectionCard title="Endorsements">
               <div className="flex flex-col gap-4">
-                {/* Talent Scout Endorsements (prioritized) */}
-                {scoutEndorsements.length > 0 && (
-                  <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-1.5 mb-1">
-                      <RiShieldStarLine size={14} className="text-brand" />
-                      <span className="text-xs font-medium text-brand uppercase tracking-wider">Talent Scout Endorsements</span>
-                    </div>
-                    {scoutEndorsements.map(e => (
-                      <div key={e.name} className="flex flex-col gap-2 p-3 bg-brand/5 border border-brand/20">
-                        <div className="flex items-start gap-3">
-                          <Avatar name={e.name} size="sm" />
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-medium text-text-primary">{e.name}</span>
-                              <Badge variant="brand" className="text-[10px] py-0">Scout</Badge>
-                            </div>
-                            <span className="text-xs text-text-muted">{e.role}</span>
-                          </div>
-                        </div>
-                        <p className="text-sm text-text-secondary leading-relaxed line-clamp-3">&ldquo;{e.comment}&rdquo;</p>
-                      </div>
-                    ))}
+                {/* Talent Scout Endorsement (one per talent) */}
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <RiShieldStarLine size={14} className="text-brand" />
+                    <span className="text-xs font-medium text-brand uppercase tracking-wider">Talent Scout Endorsement</span>
                   </div>
-                )}
-
-                {/* Other Platform Endorsements */}
-                {otherEndorsements.length > 0 && (
-                  <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-1.5 mb-1">
-                      <RiAwardLine size={14} className="text-text-muted" />
-                      <span className="text-xs font-medium text-text-muted uppercase tracking-wider">Other Endorsements</span>
-                    </div>
-                    {otherEndorsements.map(e => (
-                      <div key={e.endorser} className="flex flex-col gap-2 p-3 bg-bg-secondary border border-border">
-                        <div className="flex items-start gap-3">
-                          <Avatar name={e.endorser} size="sm" />
-                          <div className="flex-1 min-w-0">
-                            <span className="text-sm font-medium text-text-primary">{e.endorser}</span>
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-xs text-text-muted">{e.role}</span>
-                              <span className="text-xs text-text-muted">&bull;</span>
-                              <span className="text-xs text-text-muted">{e.platform}</span>
-                            </div>
+                  {scoutEndorsement ? (
+                    <div className="flex flex-col gap-2 p-3 bg-brand/5 border border-brand/20">
+                      <div className="flex items-start gap-3">
+                        <Avatar name={scoutEndorsement.name} size="sm" />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium text-text-primary">{scoutEndorsement.name}</span>
+                            <Badge variant="brand" className="text-[10px] py-0">Scout</Badge>
                           </div>
+                          <span className="text-xs text-text-muted">{scoutEndorsement.role}</span>
                         </div>
-                        <p className="text-sm text-text-secondary leading-relaxed line-clamp-3">&ldquo;{e.text}&rdquo;</p>
                       </div>
-                    ))}
-                  </div>
-                )}
+                      <p className="text-sm text-text-secondary leading-relaxed line-clamp-3">&ldquo;{scoutEndorsement.comment}&rdquo;</p>
+                    </div>
+                  ) : (
+                    <button className="flex items-center gap-2 px-3 py-2.5 border border-dashed border-brand/40 hover:border-brand transition-colors cursor-pointer group">
+                      <RiShieldStarLine size={14} className="text-brand/60 group-hover:text-brand" />
+                      <span className="text-sm text-brand/60 group-hover:text-brand">Request endorsement from your talent scout</span>
+                    </button>
+                  )}
+                </div>
 
-                {/* Add Endorsement */}
-                <button
-                  onClick={() => setAddEndorsementOpen(true)}
-                  className="flex items-center gap-2 px-3 py-2.5 border border-dashed border-brand/40 hover:border-brand transition-colors cursor-pointer group"
-                >
-                  <RiAddLine size={16} className="text-brand/60 group-hover:text-brand" />
-                  <span className="text-sm text-brand/60 group-hover:text-brand">Add Endorsement</span>
-                </button>
               </div>
             </SectionCard>
 
@@ -597,132 +607,165 @@ export default function TalentProfilePage() {
 
             {/* Resume */}
             <SectionCard title="Resume / CV">
-              <div className="flex flex-col gap-3">
-                {/* Resume preview thumbnail */}
-                <button
-                  onClick={() => setResumePreviewOpen(true)}
-                  className="w-full h-[320px] bg-white overflow-hidden border border-border hover:border-brand/50 transition-colors cursor-pointer group relative"
-                >
-                  {/* Scaled-down real resume content — clipped to show top portion */}
-                  <div className="w-full h-full pointer-events-none">
-                    <div className="w-full scale-[0.62] origin-top" style={{ width: '161%', marginLeft: '-30.5%' }}>
-                      <div className="px-8 py-6 space-y-4 text-gray-800 text-left">
-                        <div className="space-y-0.5">
-                          <h4 className="text-2xl font-bold text-gray-900">Naved Alam</h4>
-                          <p className="text-sm text-gray-500">Design Engineer &bull; San Francisco, CA</p>
-                          <p className="text-xs text-gray-400">navedalam@email.com &bull; github.com/navedalam &bull; linkedin.com/in/navedalam</p>
-                        </div>
-                        <div className="h-px bg-gray-200" />
-                        <div className="space-y-1.5">
-                          <h5 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Summary</h5>
-                          <p className="text-sm text-gray-600 leading-relaxed">Design Engineer with 5+ years of experience building high-quality web applications and design systems. Passionate about bridging design and engineering to create delightful user experiences.</p>
-                        </div>
-                        <div className="space-y-2">
-                          <h5 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Experience</h5>
-                          <div className="space-y-1">
-                            <div className="flex justify-between"><span className="text-sm font-semibold text-gray-800">Design Engineer</span><span className="text-xs text-gray-400">2023 – Present</span></div>
-                            <p className="text-xs text-gray-500">NodeOps</p>
-                            <ul className="text-sm text-gray-600 list-disc list-inside"><li>Led design system development serving 12+ product teams</li><li>Built responsive dashboard UI handling 100k+ daily users</li></ul>
+              {hasResume ? (
+                <div className="flex flex-col gap-3">
+                  {/* Resume preview thumbnail */}
+                  <button
+                    onClick={() => setResumePreviewOpen(true)}
+                    className="w-full h-[320px] bg-white overflow-hidden border border-border hover:border-brand/50 transition-colors cursor-pointer group relative"
+                  >
+                    <div className="w-full h-full pointer-events-none">
+                      <div className="w-full scale-[0.62] origin-top" style={{ width: '161%', marginLeft: '-30.5%' }}>
+                        <div className="px-8 py-6 space-y-4 text-gray-800 text-left">
+                          <div className="space-y-0.5">
+                            <h4 className="text-2xl font-bold text-gray-900">Naved Alam</h4>
+                            <p className="text-sm text-gray-500">Design Engineer &bull; San Francisco, CA</p>
+                            <p className="text-xs text-gray-400">navedalam@email.com &bull; github.com/navedalam &bull; linkedin.com/in/navedalam</p>
                           </div>
-                          <div className="space-y-1">
-                            <div className="flex justify-between"><span className="text-sm font-semibold text-gray-800">Frontend Developer</span><span className="text-xs text-gray-400">2021 – 2023</span></div>
-                            <p className="text-xs text-gray-500">Superteam</p>
-                            <ul className="text-sm text-gray-600 list-disc list-inside"><li>Developed DeFi protocol dashboard with real-time data</li></ul>
+                          <div className="h-px bg-gray-200" />
+                          <div className="space-y-1.5">
+                            <h5 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Summary</h5>
+                            <p className="text-sm text-gray-600 leading-relaxed">Design Engineer with 5+ years of experience building high-quality web applications and design systems. Passionate about bridging design and engineering to create delightful user experiences.</p>
                           </div>
-                        </div>
-                        <div className="space-y-1.5">
-                          <h5 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Skills</h5>
-                          <div className="flex flex-wrap gap-1.5">
-                            {['React', 'TypeScript', 'Tailwind CSS', 'Figma', 'Next.js', 'Solana', 'Design Systems', 'Web3'].map(s => (
-                              <span key={s} className="px-2 py-0.5 bg-gray-100 text-xs text-gray-600">{s}</span>
-                            ))}
+                          <div className="space-y-2">
+                            <h5 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Experience</h5>
+                            <div className="space-y-1">
+                              <div className="flex justify-between"><span className="text-sm font-semibold text-gray-800">Design Engineer</span><span className="text-xs text-gray-400">2023 – Present</span></div>
+                              <p className="text-xs text-gray-500">NodeOps</p>
+                              <ul className="text-sm text-gray-600 list-disc list-inside"><li>Led design system development serving 12+ product teams</li><li>Built responsive dashboard UI handling 100k+ daily users</li></ul>
+                            </div>
+                            <div className="space-y-1">
+                              <div className="flex justify-between"><span className="text-sm font-semibold text-gray-800">Frontend Developer</span><span className="text-xs text-gray-400">2021 – 2023</span></div>
+                              <p className="text-xs text-gray-500">Superteam</p>
+                              <ul className="text-sm text-gray-600 list-disc list-inside"><li>Developed DeFi protocol dashboard with real-time data</li></ul>
+                            </div>
+                          </div>
+                          <div className="space-y-1.5">
+                            <h5 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Skills</h5>
+                            <div className="flex flex-wrap gap-1.5">
+                              {['React', 'TypeScript', 'Tailwind CSS', 'Figma', 'Next.js', 'Solana', 'Design Systems', 'Web3'].map(s => (
+                                <span key={s} className="px-2 py-0.5 bg-gray-100 text-xs text-gray-600">{s}</span>
+                              ))}
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
+                    <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white to-transparent" />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                      <span className="text-white text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5">
+                        <RiExternalLinkLine size={14} />
+                        Click to preview
+                      </span>
+                    </div>
+                  </button>
+                  <div className="flex items-center gap-3 p-3 bg-bg-secondary">
+                    <RiFileTextLine size={18} className="text-brand shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-text-primary truncate">Naved_Alam_Resume.pdf</p>
+                      <p className="text-xs text-text-muted">Uploaded 3 days ago</p>
+                    </div>
+                    <Button variant="ghost" size="icon-sm" title="Download">
+                      <RiDownloadLine size={16} />
+                    </Button>
                   </div>
-                  {/* Fade-out at bottom */}
-                  <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white to-transparent" />
-                  {/* Hover overlay */}
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
-                    <span className="text-white text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5">
-                      <RiExternalLinkLine size={14} />
-                      Click to preview
-                    </span>
-                  </div>
-                </button>
-                {/* File info row */}
-                <div className="flex items-center gap-3 p-3 bg-bg-secondary">
-                  <RiFileTextLine size={18} className="text-brand shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-text-primary truncate">Naved_Alam_Resume.pdf</p>
-                    <p className="text-xs text-text-muted">Uploaded 3 days ago</p>
-                  </div>
-                  <Button variant="ghost" size="icon-sm" title="Download">
-                    <RiDownloadLine size={16} />
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-2 py-6 text-center">
+                  <RiFileTextLine size={24} className="text-text-muted/40" />
+                  <p className="text-sm text-text-muted">Upload your resume to let recruiters review your experience.</p>
+                  <Button variant="secondary" size="sm" onClick={() => resumeInputRef.current?.click()}>
+                    <RiUploadLine size={14} />
+                    Upload Resume
+                  </Button>
+                  <input ref={resumeInputRef} type="file" accept=".pdf,.doc,.docx" className="hidden" onChange={e => {
+                    if (e.target.files?.[0]) setHasResume(true)
+                    e.target.value = ''
+                  }} />
+                </div>
+              )}
+            </SectionCard>
+
+            {/* POW */}
+            <SectionCard title="POW">
+              {portfolio.length === 0 ? (
+                <div className="flex flex-col items-center gap-2 py-6 text-center">
+                  <RiImageLine size={24} className="text-text-muted/40" />
+                  <p className="text-sm text-text-muted">Showcase your best work to stand out to hiring teams.</p>
+                  <Button variant="secondary" size="sm" onClick={addPortfolioItem}>
+                    <RiAddLine size={14} />
+                    Add Work
                   </Button>
                 </div>
-              </div>
-            </SectionCard>
-
-            {/* Portfolio */}
-            <SectionCard title="Portfolio">
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                <button
-                  onClick={addPortfolioItem}
-                  className="h-[90px] bg-bg-secondary border border-dashed border-brand/40 hover:border-brand flex flex-col items-center justify-center gap-1.5 cursor-pointer transition-colors group"
-                >
-                  <RiAddLine size={20} className="text-brand/60 group-hover:text-brand" />
-                  <span className="text-xs text-text-muted">Add Work</span>
-                </button>
-                {portfolio.map(item => (
-                  <div key={item.id} className="h-[90px] bg-bg-secondary border border-border flex flex-col items-center justify-center gap-1.5 relative group">
-                    <RiImageLine size={18} className="text-brand/50" />
-                    <span className="text-xs text-text-secondary">{item.title}</span>
-                    <button
-                      onClick={() => removePortfolioItem(item.id)}
-                      className="absolute top-1 right-1 p-0.5 bg-red-500/80 text-white opacity-60 hover:opacity-100 focus:opacity-100 transition-opacity cursor-pointer"
-                    >
-                      <RiDeleteBinLine size={10} />
-                    </button>
-                  </div>
-                ))}
-                {Array.from({ length: Math.max(0, 2 - portfolio.length) }).map((_, i) => (
-                  <div key={`e-${i}`} className="h-[90px] bg-bg-secondary border border-border flex items-center justify-center">
-                    <RiImageLine size={18} className="text-text-muted/20" />
-                  </div>
-                ))}
-              </div>
-            </SectionCard>
-
-            {/* Proudest Contribution */}
-            <SectionCard title="Proudest Solana Contribution">
-              <div className="flex items-center gap-3 p-3 bg-bg-secondary">
-                <Avatar name="Solana" size="sm" className="bg-brand/20" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-text-primary">{proudestContribution}</p>
-                  <p className="text-xs text-text-muted">{contributionDetail}</p>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  <button
+                    onClick={addPortfolioItem}
+                    className="h-[90px] bg-bg-secondary border border-dashed border-brand/40 hover:border-brand flex flex-col items-center justify-center gap-1.5 cursor-pointer transition-colors group"
+                  >
+                    <RiAddLine size={20} className="text-brand/60 group-hover:text-brand" />
+                    <span className="text-xs text-text-muted">Add Work</span>
+                  </button>
+                  {portfolio.map(item => (
+                    <div key={item.id} className="h-[90px] bg-bg-secondary border border-border flex flex-col items-center justify-center gap-1.5 relative group">
+                      <RiImageLine size={18} className="text-brand/50" />
+                      <span className="text-xs text-text-secondary">{item.title}</span>
+                      <button
+                        onClick={() => removePortfolioItem(item.id)}
+                        className="absolute top-1 right-1 p-0.5 bg-red-500/80 text-white opacity-60 hover:opacity-100 focus:opacity-100 transition-opacity cursor-pointer"
+                      >
+                        <RiDeleteBinLine size={10} />
+                      </button>
+                    </div>
+                  ))}
                 </div>
-              </div>
+              )}
+            </SectionCard>
+
+            {/* Solana Contribution */}
+            <SectionCard title="Solana Contribution">
+              {!proudestContribution && !contributionDetail ? (
+                <div className="flex flex-col items-center gap-2 py-6 text-center">
+                  <Avatar name="Solana" size="sm" className="bg-brand/20" />
+                  <p className="text-sm text-text-muted">Highlight your proudest Solana contribution.</p>
+                  <Button variant="secondary" size="sm" onClick={() => setProudestContribution('My Contribution')}>Add Contribution</Button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3 p-3 bg-bg-secondary">
+                  <Avatar name="Solana" size="sm" className="bg-brand/20" />
+                  <div className="flex-1 min-w-0">
+                    <InlineEditableText value={proudestContribution} onChange={setProudestContribution} className="text-sm text-text-primary" />
+                    <InlineEditableText value={contributionDetail} onChange={setContributionDetail} className="text-xs text-text-muted" />
+                  </div>
+                </div>
+              )}
             </SectionCard>
 
             {/* References */}
-            <SectionCard title="References">
-              <div className="flex flex-col gap-2">
-                {PROFILE_DEFAULTS.references.map(ref => (
-                  <div key={ref.name} className="flex items-center gap-3 p-3 bg-bg-secondary">
-                    <Avatar name={ref.name} size="sm" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-text-primary">{ref.name}</p>
-                      <p className="text-xs text-text-muted">{ref.role}</p>
+            <SectionCard title="References" info="Name and email are required. We will share this data with our hiring partners at the offer stage.">
+              {references.length === 0 ? (
+                <div className="flex flex-col items-center gap-2 py-6 text-center">
+                  <RiUserSettingsLine size={24} className="text-text-muted/40" />
+                  <p className="text-sm text-text-muted">Add professional references to strengthen your profile.</p>
+                  <Button variant="secondary" size="sm" onClick={() => setReferences([{ name: '', role: '' }])}>Add Reference</Button>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  {references.map((ref, i) => (
+                    <div key={i} className="flex items-center gap-3 p-3 bg-bg-secondary">
+                      <Avatar name={ref.name || '?'} size="sm" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-text-primary">{ref.name || <span className="italic text-text-muted">Name required</span>}</p>
+                        <p className="text-xs text-text-muted">{ref.role || <span className="italic">Role</span>}</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </SectionCard>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Add Social Link Modal */}
       {addSocialOpen && (
@@ -743,44 +786,58 @@ export default function TalentProfilePage() {
       {/* Edit Profile Modal */}
       {editOpen && (
         <EditProfileModal
-          data={{ bio, location, roleTitle, availability, openFor, compensation, desiredRoles }}
+          data={{ bio, location, roleTitle, availability, openFor, compensation, primaryRole, secondaryRoles, skills }}
           onSave={(d) => {
             setBio(d.bio)
             setLocation(d.location)
             setRoleTitle(d.roleTitle)
             setAvailability(d.availability)
             setOpenFor(d.openFor)
-            setCompensation(d.compensation)
-            setDesiredRoles(d.desiredRoles)
+            // Parse compensation string back to range if edited in modal
+            const match = d.compensation.match(/\$(\d+)k\s*–\s*\$(\d+)k/)
+            if (match) setSalaryRange([parseInt(match[1]) * 1000, parseInt(match[2]) * 1000])
+            setPrimaryRole(d.primaryRole)
+            setSecondaryRoles(d.secondaryRoles)
+            setSkills(d.skills)
             handleSave()
           }}
           onClose={() => setEditOpen(false)}
         />
       )}
 
-      {/* Add Endorsement Modal */}
-      {addEndorsementOpen && (
-        <AddEndorsementModal
-          onAdd={(endorsement) => {
-            setOtherEndorsements(prev => [...prev, endorsement])
-            setAddEndorsementOpen(false)
-            setShowSaved(true)
-            setTimeout(() => setShowSaved(false), 4000)
-          }}
-          onClose={() => setAddEndorsementOpen(false)}
-        />
-      )}
     </PageShell>
   )
 }
 
 /* ─── Section Card ─── */
 
-function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
+function SectionCard({ title, info, children }: { title: string; info?: string; children: React.ReactNode }) {
+  const [showInfo, setShowInfo] = useState(false)
   return (
     <div className="border border-border">
-      <div className="px-4 py-3 border-b border-border">
+      <div className="px-4 py-3 border-b border-border flex items-center gap-2">
         <h3 className="text-sm font-medium text-text-primary">{title}</h3>
+        {info && (
+          <div className="relative">
+            <button
+              onMouseEnter={() => setShowInfo(true)}
+              onMouseLeave={() => setShowInfo(false)}
+              onClick={() => setShowInfo(!showInfo)}
+              className="text-text-muted hover:text-text-secondary cursor-pointer"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="16" x2="12" y2="12" />
+                <line x1="12" y1="8" x2="12.01" y2="8" />
+              </svg>
+            </button>
+            {showInfo && (
+              <div className="absolute left-0 top-full mt-1 z-20 w-56 p-2 bg-bg-card border border-border shadow-lg text-xs text-text-secondary leading-relaxed">
+                {info}
+              </div>
+            )}
+          </div>
+        )}
       </div>
       <div className="p-4">{children}</div>
     </div>
@@ -1041,7 +1098,9 @@ interface EditData {
   availability: string
   openFor: string
   compensation: string
-  desiredRoles: string[]
+  primaryRole: string
+  secondaryRoles: string[]
+  skills: string[]
 }
 
 function EditProfileModal({ data, onSave, onClose }: {
@@ -1051,7 +1110,8 @@ function EditProfileModal({ data, onSave, onClose }: {
 }) {
   const overlayRef = useRef<HTMLDivElement>(null)
   const [form, setForm] = useState<EditData>(data)
-  const [newRole, setNewRole] = useState('')
+  const [newSecondaryRole, setNewSecondaryRole] = useState('')
+  const [newSkill, setNewSkill] = useState('')
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
@@ -1063,10 +1123,16 @@ function EditProfileModal({ data, onSave, onClose }: {
     setForm(prev => ({ ...prev, [field]: value }))
   }
 
-  const addRole = () => {
-    if (newRole.trim() && !form.desiredRoles.includes(newRole.trim())) {
-      update('desiredRoles', [...form.desiredRoles, newRole.trim()])
-      setNewRole('')
+  const addSecondaryRole = () => {
+    if (newSecondaryRole.trim() && !form.secondaryRoles.includes(newSecondaryRole.trim())) {
+      update('secondaryRoles', [...form.secondaryRoles, newSecondaryRole.trim()])
+      setNewSecondaryRole('')
+    }
+  }
+  const addSkill = () => {
+    if (newSkill.trim() && !form.skills.includes(newSkill.trim())) {
+      update('skills', [...form.skills, newSkill.trim()])
+      setNewSkill('')
     }
   }
 
@@ -1111,11 +1177,42 @@ function EditProfileModal({ data, onSave, onClose }: {
           {/* Desired Roles */}
           <div className="flex flex-col gap-3">
             <span className="text-xs font-medium text-text-muted uppercase tracking-wider">Desired Roles</span>
+            <FieldInput label="Primary Role" value={form.primaryRole} onChange={v => update('primaryRole', v)} />
+            <div className="flex flex-col gap-2">
+              <span className="text-xs text-text-muted">Secondary Roles</span>
+              <div className="flex flex-wrap gap-2">
+                {form.secondaryRoles.map(r => (
+                  <span key={r} className="flex items-center gap-1 bg-white/8 text-text-secondary text-xs px-2 py-1">
+                    {r}
+                    <button onClick={() => update('secondaryRoles', form.secondaryRoles.filter(x => x !== r))} className="text-text-muted hover:text-red-400 cursor-pointer">
+                      <RiCloseLine size={12} />
+                    </button>
+                  </span>
+                ))}
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  value={newSecondaryRole}
+                  onChange={e => setNewSecondaryRole(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && addSecondaryRole()}
+                  placeholder="Add a secondary role..."
+                  className="bg-bg-input border border-border px-3 py-2 text-sm text-text-primary placeholder:text-text-muted outline-none focus:border-brand flex-1"
+                />
+                <Button size="sm" variant="secondary" onClick={addSecondaryRole}>Add</Button>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-border" />
+
+          {/* Skills */}
+          <div className="flex flex-col gap-3">
+            <span className="text-xs font-medium text-text-muted uppercase tracking-wider">Skills</span>
             <div className="flex flex-wrap gap-2">
-              {form.desiredRoles.map(r => (
-                <span key={r} className="flex items-center gap-1 bg-white/8 text-text-secondary text-xs px-2 py-1">
-                  {r}
-                  <button onClick={() => update('desiredRoles', form.desiredRoles.filter(x => x !== r))} className="text-text-muted hover:text-red-400 cursor-pointer">
+              {form.skills.map(s => (
+                <span key={s} className="flex items-center gap-1 bg-white/8 text-text-secondary text-xs px-2 py-1">
+                  {s}
+                  <button onClick={() => update('skills', form.skills.filter(x => x !== s))} className="text-text-muted hover:text-red-400 cursor-pointer">
                     <RiCloseLine size={12} />
                   </button>
                 </span>
@@ -1123,13 +1220,13 @@ function EditProfileModal({ data, onSave, onClose }: {
             </div>
             <div className="flex items-center gap-2">
               <input
-                value={newRole}
-                onChange={e => setNewRole(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && addRole()}
-                placeholder="Add a role..."
+                value={newSkill}
+                onChange={e => setNewSkill(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && addSkill()}
+                placeholder="Add a skill..."
                 className="bg-bg-input border border-border px-3 py-2 text-sm text-text-primary placeholder:text-text-muted outline-none focus:border-brand flex-1"
               />
-              <Button size="sm" variant="secondary" onClick={addRole}>Add</Button>
+              <Button size="sm" variant="secondary" onClick={addSkill}>Add</Button>
             </div>
           </div>
 
@@ -1145,125 +1242,7 @@ function EditProfileModal({ data, onSave, onClose }: {
   )
 }
 
-/* ─── Add Endorsement Modal ─── */
 
-interface OtherEndorsement {
-  platform: string
-  endorser: string
-  role: string
-  text: string
-}
-
-const ENDORSEMENT_PLATFORMS = ['LinkedIn', 'Twitter / X', 'GitHub', 'Superteam Earn', 'Other']
-
-function AddEndorsementModal({ onAdd, onClose }: {
-  onAdd: (endorsement: OtherEndorsement) => void
-  onClose: () => void
-}) {
-  const overlayRef = useRef<HTMLDivElement>(null)
-  const [platform, setPlatform] = useState(ENDORSEMENT_PLATFORMS[0])
-  const [endorser, setEndorser] = useState('')
-  const [role, setRole] = useState('')
-  const [text, setText] = useState('')
-
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
-    window.addEventListener('keydown', handleKey)
-    return () => window.removeEventListener('keydown', handleKey)
-  }, [onClose])
-
-  const handleSubmit = () => {
-    if (!endorser.trim() || !text.trim()) return
-    onAdd({ platform, endorser: endorser.trim(), role: role.trim(), text: text.trim() })
-  }
-
-  return (
-    <div
-      ref={overlayRef}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      onClick={e => { if (e.target === overlayRef.current) onClose() }}
-    >
-      <div className="absolute inset-0 bg-black/60" />
-      <div className="relative w-full max-w-md bg-bg-secondary border border-border flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          <h2 className="text-lg font-medium text-text-primary">Add Endorsement</h2>
-          <button onClick={onClose} className="text-text-muted hover:text-text-primary transition-colors cursor-pointer p-1">
-            <RiCloseLine size={20} />
-          </button>
-        </div>
-
-        {/* Body */}
-        <div className="p-4 flex flex-col gap-4">
-          {/* Platform */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs text-text-muted">Platform</label>
-            <div className="flex flex-wrap gap-2">
-              {ENDORSEMENT_PLATFORMS.map(p => (
-                <button
-                  key={p}
-                  onClick={() => setPlatform(p)}
-                  className={`px-2.5 py-1.5 text-xs border transition-colors cursor-pointer ${
-                    platform === p
-                      ? 'border-brand bg-brand/10 text-brand'
-                      : 'border-border bg-bg-card text-text-muted hover:text-text-primary'
-                  }`}
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Endorser name */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs text-text-muted">Endorser Name</label>
-            <input
-              type="text"
-              value={endorser}
-              onChange={e => setEndorser(e.target.value)}
-              placeholder="e.g. Jane Smith"
-              className="w-full px-3 py-2 bg-bg-card border border-border text-sm text-text-primary placeholder:text-text-muted outline-none focus:border-brand transition-colors"
-              autoFocus
-            />
-          </div>
-
-          {/* Role */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs text-text-muted">Their Role / Title</label>
-            <input
-              type="text"
-              value={role}
-              onChange={e => setRole(e.target.value)}
-              placeholder="e.g. Product Manager at Jupiter"
-              className="w-full px-3 py-2 bg-bg-card border border-border text-sm text-text-primary placeholder:text-text-muted outline-none focus:border-brand transition-colors"
-            />
-          </div>
-
-          {/* Endorsement text */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs text-text-muted">Endorsement</label>
-            <textarea
-              value={text}
-              onChange={e => setText(e.target.value)}
-              placeholder="What did they say about you?"
-              rows={3}
-              className="w-full px-3 py-2 bg-bg-card border border-border text-sm text-text-primary placeholder:text-text-muted outline-none focus:border-brand transition-colors resize-none"
-            />
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="flex justify-end gap-2 p-4 border-t border-border">
-          <Button variant="ghost" size="sm" onClick={onClose}>Cancel</Button>
-          <Button size="sm" onClick={handleSubmit} disabled={!endorser.trim() || !text.trim()}>
-            Add Endorsement
-          </Button>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 /* ─── Form Fields ─── */
 
@@ -1321,6 +1300,47 @@ function FieldSelect({ label, value, onChange, options }: {
 }
 
 /* ─── Inline Editable Components ─── */
+
+function InlineEditableText({ value, onChange, className }: {
+  value: string
+  onChange: (v: string) => void
+  className?: string
+}) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState(value)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => { setDraft(value) }, [value])
+  useEffect(() => { if (editing) inputRef.current?.focus() }, [editing])
+
+  const commit = () => {
+    setEditing(false)
+    if (draft.trim() && draft !== value) onChange(draft.trim())
+    else setDraft(value)
+  }
+
+  if (editing) {
+    return (
+      <input
+        ref={inputRef}
+        value={draft}
+        onChange={e => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={e => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') { setDraft(value); setEditing(false) } }}
+        className={`bg-transparent border-b border-brand outline-none w-full ${className ?? ''}`}
+      />
+    )
+  }
+
+  return (
+    <p
+      onClick={() => setEditing(true)}
+      className={`cursor-pointer hover:text-text-primary transition-colors ${className ?? ''}`}
+    >
+      {value}
+    </p>
+  )
+}
 
 function InlineSelect({ value, onChange, options, icon, render, searchable }: {
   value: string
@@ -1395,37 +1415,32 @@ function InlineSelect({ value, onChange, options, icon, render, searchable }: {
   )
 }
 
-function InlineSelectWithCustom({ value, onChange, options, icon, placeholder }: {
-  value: string
-  onChange: (v: string) => void
-  options: string[]
-  icon?: React.ReactNode
-  placeholder?: string
+function InlineSalarySlider({ value, onChange }: {
+  value: [number, number]
+  onChange: (v: [number, number]) => void
 }) {
   const [open, setOpen] = useState(false)
-  const [custom, setCustom] = useState(false)
-  const [draft, setDraft] = useState(value)
+  const [draft, setDraft] = useState<[number, number]>(value)
   const ref = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    setDraft(value)
+  }, [value])
 
   useEffect(() => {
     if (!open) return
     const handleClick = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) { setOpen(false); setCustom(false) }
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        onChange(draft)
+        setOpen(false)
+      }
     }
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
-  }, [open])
+  }, [open, draft, onChange])
 
-  useEffect(() => {
-    if (custom) inputRef.current?.focus()
-  }, [custom])
-
-  const saveCustom = () => {
-    if (draft.trim()) onChange(draft.trim())
-    setCustom(false)
-    setOpen(false)
-  }
+  const leftPct = ((draft[0] - SALARY_MIN) / (SALARY_MAX - SALARY_MIN)) * 100
+  const rightPct = ((draft[1] - SALARY_MIN) / (SALARY_MAX - SALARY_MIN)) * 100
 
   return (
     <div ref={ref} className="relative">
@@ -1433,43 +1448,59 @@ function InlineSelectWithCustom({ value, onChange, options, icon, placeholder }:
         onClick={() => setOpen(!open)}
         className="flex items-center gap-1 cursor-pointer hover:text-text-primary transition-colors"
       >
-        {icon} {value}
+        <RiMoneyDollarCircleLine size={12} />
+        {formatSalaryK(value[0])} – {formatSalaryK(value[1])} / year
         <RiArrowDownSLine size={12} className="text-text-muted" />
       </button>
       {open && (
-        <div className="absolute top-full left-0 mt-1 bg-bg-card border border-border shadow-lg z-30 min-w-[200px]">
-          {options.map(opt => (
-            <button
-              key={opt}
-              onClick={() => { onChange(opt); setOpen(false); setCustom(false) }}
-              className={`w-full text-left px-3 py-2 text-xs cursor-pointer transition-colors ${opt === value ? 'text-brand bg-brand/10' : 'text-text-secondary hover:bg-bg-secondary hover:text-text-primary'}`}
-            >
-              {opt}
-            </button>
-          ))}
-          <div className="border-t border-border">
-            {custom ? (
-              <div className="flex items-center gap-1 p-2">
-                <input
-                  ref={inputRef}
-                  value={draft}
-                  onChange={e => setDraft(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter') saveCustom(); if (e.key === 'Escape') { setCustom(false) } }}
-                  placeholder={placeholder}
-                  className="bg-bg-input border border-border px-2 py-1 text-xs text-text-primary outline-none focus:border-brand flex-1 min-w-0"
-                />
-                <button onClick={saveCustom} className="text-brand text-xs font-medium px-1.5 py-1 hover:bg-brand/10 cursor-pointer">
-                  Set
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => { setDraft(value); setCustom(true) }}
-                className="w-full text-left px-3 py-2 text-xs text-text-muted hover:text-brand hover:bg-bg-secondary cursor-pointer flex items-center gap-1"
-              >
-                <RiPencilLine size={10} /> Custom amount...
-              </button>
-            )}
+        <div className="absolute top-full right-0 sm:left-0 sm:right-auto mt-1 bg-bg-card border border-border shadow-lg z-30 w-[280px] sm:w-[300px] p-4 flex flex-col gap-3">
+          <div className="flex justify-between text-[11px] font-mono text-text-muted">
+            <span>{formatSalaryFull(SALARY_MIN)}</span>
+            <span>{formatSalaryFull(SALARY_MAX)}</span>
+          </div>
+          {/* Slider track */}
+          <div className="relative h-1.5 w-full">
+            {/* Rail */}
+            <div className="absolute inset-0 bg-border" />
+            {/* Active track */}
+            <div
+              className="absolute top-0 bottom-0 bg-brand"
+              style={{ left: `${leftPct}%`, width: `${rightPct - leftPct}%` }}
+            />
+            {/* Min thumb */}
+            <input
+              type="range"
+              min={SALARY_MIN}
+              max={SALARY_MAX}
+              step={SALARY_STEP}
+              value={draft[0]}
+              onChange={e => {
+                const v = Number(e.target.value)
+                if (v <= draft[1] - SALARY_STEP) setDraft([v, draft[1]])
+              }}
+              className="salary-slider-thumb"
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
+            />
+            {/* Max thumb */}
+            <input
+              type="range"
+              min={SALARY_MIN}
+              max={SALARY_MAX}
+              step={SALARY_STEP}
+              value={draft[1]}
+              onChange={e => {
+                const v = Number(e.target.value)
+                if (v >= draft[0] + SALARY_STEP) setDraft([draft[0], v])
+              }}
+              className="salary-slider-thumb"
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
+            />
+          </div>
+          {/* Current range label */}
+          <div className="text-center">
+            <span className="text-xs font-mono text-brand">
+              {formatSalaryFull(draft[0])} – {formatSalaryFull(draft[1])}
+            </span>
           </div>
         </div>
       )}

@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { motion } from 'framer-motion'
 import { RiTimeLine, RiCheckLine, RiVideoLine, RiAlertLine, RiCalendarLine, RiInformationLine, RiCloseLine, RiFileTextLine } from '@remixicon/react'
 import { PageShell } from '@/components/layout/PageShell'
 import { Avatar } from '@/components/ui/Avatar'
@@ -7,7 +8,9 @@ import { SearchInput } from '@/components/ui/SearchInput'
 import { TabGroup } from '@/components/ui/TabGroup'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { useAuth } from '@/context/AuthContext'
+import { MessageDetailPanel } from '@/components/applications/MessageDetailPanel'
 import { cn } from '@/lib/cn'
+import { fadeUp, staggerContainer, listItem } from '@/lib/motion'
 
 type ApplicationStatus = 'All' | 'Matched Job' | 'Introduced' | 'In Interviews' | 'Placed' | 'Rejected'
 
@@ -52,7 +55,7 @@ const initialMessages: Message[] = [
     title: 'Interview Scheduled - Phantom Vision',
     company: 'Phantom',
     preview: 'Your interview for Senior Product Designer has been confirmed. Please book your preferred time slot.',
-    time: 'Info Code',
+    time: '2h ago',
     actionLabel: 'Book Interview',
     actionType: 'brand',
     secondaryLabel: 'Confirm Now',
@@ -63,7 +66,7 @@ const initialMessages: Message[] = [
     title: 'Design Assignment 4 - Magic Edits',
     company: 'Magic Edits',
     preview: 'Please complete the design challenge for the UI/UX Designer position. Deadline is 5 days from now.',
-    time: 'Due in 5 days',
+    time: '1d ago',
     actionLabel: 'View Assignment',
     actionType: 'brand',
     urgency: 'deadline',
@@ -73,7 +76,7 @@ const initialMessages: Message[] = [
     title: 'Video Introduction Request - Software Wallet',
     company: 'Software Wallet',
     preview: 'Congratulations on your selection! Please record a video introduction and share your portfolio for the team.',
-    time: '5 min',
+    time: '5m ago',
     actionLabel: 'Record Video',
     actionType: 'brand',
     urgency: 'action',
@@ -83,7 +86,7 @@ const initialMessages: Message[] = [
     title: 'Application Received - Metaplex Studios',
     company: 'Metaplex Studios',
     preview: 'Thank you for applying to Design System Lead. We\'ll review your application and get back to you within 3-5 business days.',
-    time: 'Mon 5 minutes',
+    time: '3d ago',
     urgency: 'info',
   },
 ]
@@ -119,8 +122,8 @@ const statusTooltips: Record<ApplicationStatus, string> = {
 
 const urgencyConfig: Record<Message['urgency'], { border: string; icon: typeof RiAlertLine; iconColor: string }> = {
   action: { border: 'border-l-brand', icon: RiAlertLine, iconColor: 'text-brand' },
-  deadline: { border: 'border-l-yellow-400', icon: RiCalendarLine, iconColor: 'text-yellow-400' },
-  info: { border: 'border-l-text-muted', icon: RiInformationLine, iconColor: 'text-text-muted' },
+  deadline: { border: 'border-l-brand', icon: RiCalendarLine, iconColor: 'text-brand' },
+  info: { border: 'border-l-brand', icon: RiInformationLine, iconColor: 'text-brand' },
 }
 
 export default function ApplicationTrackerPage() {
@@ -130,6 +133,7 @@ export default function ApplicationTrackerPage() {
   const [messages, setMessages] = useState<Message[]>(initialMessages)
   const [readMessages, setReadMessages] = useState<Set<string>>(new Set())
   const [completedActions, setCompletedActions] = useState<Set<string>>(new Set())
+  const [selectedMessage, setSelectedMessage] = useState<Message | null>(null)
 
   // Compute real tab counts
   const tabCounts = useMemo(() => {
@@ -176,7 +180,7 @@ export default function ApplicationTrackerPage() {
 
   return (
     <PageShell user={user}>
-      <div className="flex flex-col gap-4 px-4 md:px-8">
+      <motion.div variants={fadeUp} className="flex flex-col gap-4 px-4 md:px-8">
         {/* Title */}
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-medium text-text-primary tracking-[-0.36px]">Open Applications</h1>
@@ -207,11 +211,11 @@ export default function ApplicationTrackerPage() {
         <p className="text-xs text-text-muted">
           {activeTab === 'All' ? `Showing all ${filteredApplications.length} applications` : `Showing ${visibleColumns.length > 0 ? filteredApplications.filter(a => a.status === activeTab).length : 0} ${activeTab.toLowerCase()} applications`}
         </p>
-      </div>
+      </motion.div>
 
       {/* Kanban Board */}
-      <div className="px-4 md:px-8 pb-4">
-        <div className={cn(
+      <motion.div variants={fadeUp} className="px-4 md:px-8 pb-4">
+        <motion.div variants={staggerContainer} initial="hidden" animate="show" className={cn(
           'grid gap-3',
           activeTab === 'All'
             ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-5'
@@ -220,7 +224,7 @@ export default function ApplicationTrackerPage() {
           {visibleColumns.map(col => {
             const colApps = filteredApplications.filter(a => a.status === col)
             return (
-              <div key={col} className={cn('flex flex-col gap-3 p-2', statusBg[col])}>
+              <motion.div key={col} variants={listItem} className={cn('flex flex-col gap-3 p-2', statusBg[col])}>
                 <div className="flex items-center justify-between py-2">
                   <div className="flex items-center gap-1.5">
                     <span className={cn('text-sm font-medium', statusColors[col])}>{col}</span>
@@ -256,14 +260,14 @@ export default function ApplicationTrackerPage() {
                     </div>
                   ))
                 )}
-              </div>
+              </motion.div>
             )
           })}
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
       {/* Message Center */}
-      <div className="px-4 md:px-8 pb-8">
+      <motion.div variants={fadeUp} className="px-4 md:px-8 pb-8">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
             <div className="flex flex-col gap-1">
@@ -276,7 +280,7 @@ export default function ApplicationTrackerPage() {
             </div>
           </div>
 
-          <div className="flex flex-col gap-4">
+          <motion.div variants={staggerContainer} initial="hidden" animate="show" className="flex flex-col gap-4">
             {messages.length === 0 ? (
               <EmptyState icon={RiCheckLine} message="All caught up! No pending messages." />
             ) : (
@@ -286,17 +290,28 @@ export default function ApplicationTrackerPage() {
                 const isRead = readMessages.has(msg.id)
                 const isDone = completedActions.has(msg.id)
                 return (
-                  <div key={msg.id} className={cn('bg-bg-secondary border-l-4 p-3 flex flex-col gap-2.5 transition-opacity', uc.border, isRead && 'opacity-60')}>
+                  <motion.div key={msg.id} variants={listItem} className={cn('bg-bg-secondary border-l-4 p-3 flex flex-col gap-2.5 transition-opacity', uc.border, isRead && 'opacity-60')}>
                     <div className="flex flex-col sm:flex-row items-start justify-between gap-1">
                       <div className="flex flex-col gap-1 flex-1">
                         <div className="flex items-center gap-2">
-                          <UrgencyIcon size={14} className={cn(uc.iconColor, 'shrink-0')} />
+                          {isDone ? (
+                            <RiCheckLine size={14} className="text-green-400 shrink-0" />
+                          ) : (
+                            <UrgencyIcon size={14} className={cn(uc.iconColor, 'shrink-0')} />
+                          )}
                           <h4 className="text-sm font-medium text-text-primary">{msg.title}</h4>
                         </div>
                         <p className="text-[13px] text-text-secondary leading-[1.54]">{msg.preview}</p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-text-muted whitespace-nowrap">{msg.time}</span>
+                        {isDone ? (
+                          <span className="flex items-center gap-1 text-xs text-green-400 whitespace-nowrap">
+                            <RiCheckLine size={12} />
+                            Done
+                          </span>
+                        ) : (
+                          <span className="text-xs text-text-muted whitespace-nowrap">{msg.time}</span>
+                        )}
                         <Button variant="ghost" size="icon-sm" onClick={() => handleDismissMessage(msg.id)} title="Dismiss"><RiCloseLine size={14} /></Button>
                       </div>
                     </div>
@@ -311,7 +326,7 @@ export default function ApplicationTrackerPage() {
                           <Button
                             size="sm"
                             variant={msg.actionType === 'brand' ? 'primary' : 'secondary'}
-                            onClick={() => handleMessageAction(msg.id, msg.actionLabel!)}
+                            onClick={() => setSelectedMessage(msg)}
                           >
                             {msg.actionLabel === 'Record Video' && <RiVideoLine size={14} />}
                             {msg.actionLabel === 'Book Interview' && <RiCheckLine size={14} />}
@@ -320,7 +335,7 @@ export default function ApplicationTrackerPage() {
                         )}
                         {msg.secondaryLabel && !isDone && (
                           <button
-                            onClick={() => handleMessageAction(msg.id, msg.secondaryLabel!)}
+                            onClick={() => setSelectedMessage(msg)}
                             className="text-sm text-text-secondary hover:text-text-primary cursor-pointer"
                           >
                             {msg.secondaryLabel}
@@ -328,13 +343,24 @@ export default function ApplicationTrackerPage() {
                         )}
                       </div>
                     )}
-                  </div>
+                  </motion.div>
                 )
               })
             )}
-          </div>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
+      {selectedMessage && (
+        <MessageDetailPanel
+          message={selectedMessage}
+          onClose={() => setSelectedMessage(null)}
+          isDone={completedActions.has(selectedMessage.id)}
+          onAction={(id, label) => {
+            handleMessageAction(id, label)
+            setSelectedMessage(null)
+          }}
+        />
+      )}
     </PageShell>
   )
 }

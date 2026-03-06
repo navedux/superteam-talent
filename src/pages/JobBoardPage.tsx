@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { RiArrowLeftSLine, RiArrowRightSLine, RiMapPinLine, RiMoneyDollarCircleLine, RiTimeLine, RiBookmarkLine, RiEyeOffLine, RiBriefcaseLine, RiCheckLine } from '@remixicon/react'
 import { PageShell } from '@/components/layout/PageShell'
 import { Avatar } from '@/components/ui/Avatar'
@@ -9,6 +10,8 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { useAuth } from '@/context/AuthContext'
 import { API_ENDPOINTS } from '@/lib/constants'
 import { cn } from '@/lib/cn'
+import { fadeUp, staggerContainer, listItem, fadeIn } from '@/lib/motion'
+import { JobDetailPanel } from '@/components/jobs/JobDetailPanel'
 import type { Job } from '@/types/jobs'
 
 const filterOptions: Record<string, string[]> = {
@@ -22,22 +25,33 @@ export default function JobBoardPage() {
   const { user } = useAuth()
   const [jobs, setJobs] = useState<Job[]>([])
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState(false)
   const [activeFilters, setActiveFilters] = useState<string[]>(['Remote', 'Full-Time'])
   const [searchQuery, setSearchQuery] = useState('')
   const [hiddenJobs, setHiddenJobs] = useState<Set<string>>(new Set())
   const [appliedJobs, setAppliedJobs] = useState<Set<string>>(new Set())
   const [savedJobs, setSavedJobs] = useState<Set<string>>(new Set())
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
-  const [visibleCount, setVisibleCount] = useState(4)
+  const [visibleCount, setVisibleCount] = useState(20)
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null)
 
-  useEffect(() => {
+  const fetchJobs = () => {
+    setLoading(true)
+    setFetchError(false)
     fetch(API_ENDPOINTS.JOBS)
       .then(res => res.json())
       .then((data: Job[]) => {
         setJobs(data)
         setLoading(false)
       })
-      .catch(() => setLoading(false))
+      .catch(() => {
+        setFetchError(true)
+        setLoading(false)
+      })
+  }
+
+  useEffect(() => {
+    fetchJobs()
   }, [])
 
   const removeFilter = (filter: string) => {
@@ -106,7 +120,7 @@ export default function JobBoardPage() {
 
   return (
     <PageShell user={user}>
-      <div className="flex flex-col gap-4 px-4 md:px-8">
+      <motion.div variants={fadeUp} className="flex flex-col gap-4 px-4 md:px-8">
         {/* Title */}
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-medium text-text-primary tracking-[-0.36px]">Browse Open Jobs</h1>
@@ -165,7 +179,7 @@ export default function JobBoardPage() {
             </div>
           )}
         </div>
-      </div>
+      </motion.div>
 
       {/* Close dropdown on outside click */}
       {openDropdown && (
@@ -173,16 +187,26 @@ export default function JobBoardPage() {
       )}
 
       {/* Job Cards */}
-      <div className="flex flex-col gap-4 px-4 md:px-8 pb-4">
-        {loading ? (
-          Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="bg-bg-secondary p-4 h-40 animate-pulse" />
-          ))
-        ) : filteredJobs.length === 0 ? (
-          <EmptyState icon={RiBriefcaseLine} message="No jobs match your search criteria" description="Try adjusting your filters or search terms" actionLabel="Reset Filters" onAction={() => { setSearchQuery(''); setActiveFilters([]); setHiddenJobs(new Set()) }} />
-        ) : (
-          visibleJobs.map(job => (
-            <div key={job.id} className="bg-bg-elevated p-1 flex flex-col">
+      <motion.div variants={fadeUp} className="flex flex-col gap-4 px-4 md:px-8 pb-4">
+        <AnimatePresence mode="wait">
+          {loading ? (
+            <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col gap-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="bg-bg-secondary p-4 h-40 animate-pulse" />
+              ))}
+            </motion.div>
+          ) : fetchError ? (
+            <motion.div key="error" variants={fadeIn} initial="hidden" animate="show" exit="hidden">
+              <EmptyState icon={RiBriefcaseLine} message="Failed to load jobs" description="Something went wrong. Please check your connection and try again." actionLabel="Retry" onAction={fetchJobs} />
+            </motion.div>
+          ) : filteredJobs.length === 0 ? (
+            <motion.div key="empty" variants={fadeIn} initial="hidden" animate="show" exit="hidden">
+              <EmptyState icon={RiBriefcaseLine} message="No jobs match your search criteria" description="Try adjusting your filters or search terms" actionLabel="Reset Filters" onAction={() => { setSearchQuery(''); setActiveFilters([]); setHiddenJobs(new Set()) }} />
+            </motion.div>
+          ) : (
+            <motion.div key="jobs" variants={staggerContainer} initial="hidden" animate="show" className="flex flex-col gap-4">
+              {visibleJobs.map(job => (
+            <motion.div key={job.id} variants={listItem} className="bg-bg-elevated p-1 flex flex-col">
               <div className="bg-bg-secondary p-3 flex flex-col gap-2.5">
                 {/* Header row */}
                 <div className="flex items-start gap-2.5">
@@ -193,7 +217,7 @@ export default function JobBoardPage() {
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <Button variant="ghost" size="icon-sm" onClick={() => handleSave(job.id)} className={cn(savedJobs.has(job.id) ? 'text-brand' : 'text-text-muted')} title={savedJobs.has(job.id) ? 'Unsave' : 'Save'}><RiBookmarkLine size={18} /></Button>
-                    <Button variant="secondary" size="sm">
+                    <Button variant="secondary" size="sm" onClick={() => setSelectedJob(job)}>
                       <span className="hidden sm:inline">More Info</span>
                       <RiArrowRightSLine size={14} />
                     </Button>
@@ -211,7 +235,7 @@ export default function JobBoardPage() {
                 </div>
 
                 {/* Description */}
-                <p className="text-[13px] text-text-secondary tracking-[-0.078px] leading-[1.54] line-clamp-2">
+                <p className="text-[13px] text-text-primary tracking-[-0.078px] leading-[1.54] line-clamp-2">
                   {job.description}
                 </p>
 
@@ -225,7 +249,7 @@ export default function JobBoardPage() {
 
               {/* Meta row */}
               <div className="flex items-center justify-between px-3 py-2 flex-wrap gap-2">
-                <div className="flex items-center gap-3 md:gap-4 text-xs text-text-muted flex-wrap">
+                <div className="flex items-center gap-3 md:gap-4 text-xs text-brand flex-wrap">
                   <span className="flex items-center gap-1">
                     <RiMapPinLine size={12} /> {job.location}
                   </span>
@@ -235,25 +259,37 @@ export default function JobBoardPage() {
                   <span className="flex items-center gap-1">
                     <RiBriefcaseLine size={12} /> {job.type}
                   </span>
-                  <span className="flex items-center gap-1">
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="flex items-center gap-1 text-xs text-text-muted">
                     <RiTimeLine size={12} /> Posted {job.postedAt}
                   </span>
-                </div>
-                <div className="flex items-center gap-2">
                   <Button variant="ghost" size="icon-sm" onClick={() => handleHide(job.id)}><RiEyeOffLine size={14} /> <span className="text-xs">Hide</span></Button>
                 </div>
               </div>
-            </div>
-          ))
-        )}
+            </motion.div>
+          ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Load More */}
         {hasMore && (
           <div className="flex justify-center">
-            <Button variant="secondary" onClick={() => setVisibleCount(prev => prev + 4)}><RiArrowLeftSLine size={20} className="text-white" /> <span className="px-1">Load More ({filteredJobs.length - visibleCount} remaining)</span> <RiArrowRightSLine size={20} className="text-text-secondary" /></Button>
+            <Button variant="secondary" onClick={() => setVisibleCount(prev => prev + 10)}><RiArrowLeftSLine size={20} className="text-white" /> <span className="px-1">Load More ({filteredJobs.length - visibleCount} remaining)</span> <RiArrowRightSLine size={20} className="text-text-secondary" /></Button>
           </div>
         )}
-      </div>
+      </motion.div>
+      {selectedJob && (
+        <JobDetailPanel
+          job={selectedJob}
+          onClose={() => setSelectedJob(null)}
+          applied={appliedJobs.has(selectedJob.id)}
+          saved={savedJobs.has(selectedJob.id)}
+          onApply={handleApply}
+          onSave={handleSave}
+        />
+      )}
     </PageShell>
   )
 }
