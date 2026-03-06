@@ -11,9 +11,15 @@ import {
 } from '@remixicon/react'
 import type { User } from '@/types/auth'
 
-const JOB_STATUS_OPTIONS = ['Open to new jobs', 'Actively looking', 'Not looking', 'Casually browsing']
-const OPEN_FOR_OPTIONS = ['Full-Time Roles', 'Part-Time Roles', 'Freelance / Contract', 'Internships', 'Any']
-const LOCATION_OPTIONS = ['Bangalore, India', 'Mumbai, India', 'Delhi, India', 'Remote', 'San Francisco, USA', 'New York, USA', 'London, UK', 'Singapore']
+const JOB_STATUS_OPTIONS = ['Actively Looking', 'Not looking', 'Casually browsing']
+const OPEN_FOR_OPTIONS = ['Full-Time Roles', 'Part-Time Roles', 'Freelance / Contract', 'Internships']
+const LOCATION_OPTIONS = [
+  'Remote',
+  'San Francisco, CA', 'New York, USA', 'Austin, TX', 'Los Angeles, CA', 'Miami, FL', 'Chicago, IL', 'Seattle, WA', 'Denver, CO', 'Boston, MA',
+  'London, UK', 'Berlin, Germany', 'Paris, France', 'Amsterdam, Netherlands', 'Lisbon, Portugal',
+  'Bangalore, India', 'Mumbai, India', 'Delhi, India',
+  'Singapore', 'Tokyo, Japan', 'Dubai, UAE',
+]
 
 interface ProfileSectionProps {
   user: User | null
@@ -32,9 +38,9 @@ interface EditFormData {
 }
 
 export function ProfileSection({ user }: ProfileSectionProps) {
-  const [jobStatus, setJobStatus] = useState('Open to new jobs')
+  const [jobStatus, setJobStatus] = useState('Actively Looking')
   const [openFor, setOpenFor] = useState('Full-Time Roles')
-  const [location, setLocation] = useState(user?.location || 'Bangalore, India')
+  const [location, setLocation] = useState(user?.location || 'San Francisco, CA')
   const [editOpen, setEditOpen] = useState(false)
   const [editData, setEditData] = useState<EditFormData>({
     name: '',
@@ -73,7 +79,7 @@ export function ProfileSection({ user }: ProfileSectionProps) {
     setEditOpen(false)
   }
 
-  const statusColor = jobStatus === 'Actively looking' ? 'success' : jobStatus === 'Not looking' ? 'error' : 'brand'
+  const statusColor = jobStatus === 'Actively Looking' ? 'success' : jobStatus === 'Not looking' ? 'error' : 'brand'
 
   return (
     <>

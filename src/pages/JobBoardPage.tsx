@@ -70,6 +70,15 @@ export default function JobBoardPage() {
   }
 
   const filteredJobs = useMemo(() => {
+    // Classify active filters by category
+    const companyOptions = filterOptions['Company'].map(o => o.toLowerCase())
+    const categoryOptions = filterOptions['Category'].map(o => o.toLowerCase())
+    const locationOptions = filterOptions['Location'].map(o => o.toLowerCase())
+
+    const companyFilters = activeFilters.filter(f => companyOptions.includes(f.toLowerCase()))
+    const categoryFilters = activeFilters.filter(f => categoryOptions.includes(f.toLowerCase()))
+    const locationFilters = activeFilters.filter(f => locationOptions.includes(f.toLowerCase()))
+
     return jobs.filter(job => {
       // Hidden jobs
       if (hiddenJobs.has(job.id)) return false
@@ -82,17 +91,17 @@ export default function JobBoardPage() {
           job.description.toLowerCase().includes(q)
         if (!matches) return false
       }
-      // Active filters
-      if (activeFilters.length > 0) {
-        const matchesAny = activeFilters.some(f => {
-          const fl = f.toLowerCase()
-          return job.location.toLowerCase().includes(fl) ||
-            job.type.toLowerCase() === fl ||
-            job.company.toLowerCase() === fl
-        })
-        // If there are filters but "Newest First" or "Oldest First" are the only ones, don't filter
-        const nonSortFilters = activeFilters.filter(f => f !== 'Newest First' && f !== 'Oldest First')
-        if (nonSortFilters.length > 0 && !matchesAny) return false
+      // Company filter — job must match at least one selected company
+      if (companyFilters.length > 0) {
+        if (!companyFilters.some(f => job.company.toLowerCase() === f.toLowerCase())) return false
+      }
+      // Category filter — job type must match at least one selected category
+      if (categoryFilters.length > 0) {
+        if (!categoryFilters.some(f => job.type.toLowerCase() === f.toLowerCase())) return false
+      }
+      // Location filter — job location must match at least one selected location
+      if (locationFilters.length > 0) {
+        if (!locationFilters.some(f => job.location.toLowerCase().includes(f.toLowerCase()))) return false
       }
       return true
     })

@@ -1112,6 +1112,7 @@ function EditProfileModal({ data, onSave, onClose }: {
   const [form, setForm] = useState<EditData>(data)
   const [newSecondaryRole, setNewSecondaryRole] = useState('')
   const [newSkill, setNewSkill] = useState('')
+  const [duplicateHint, setDuplicateHint] = useState<string | null>(null)
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
@@ -1130,10 +1131,16 @@ function EditProfileModal({ data, onSave, onClose }: {
     }
   }
   const addSkill = () => {
-    if (newSkill.trim() && !form.skills.includes(newSkill.trim())) {
-      update('skills', [...form.skills, newSkill.trim()])
-      setNewSkill('')
+    const trimmed = newSkill.trim()
+    if (!trimmed) return
+    if (form.skills.includes(trimmed)) {
+      setDuplicateHint(`"${trimmed}" is already added`)
+      setTimeout(() => setDuplicateHint(null), 2500)
+      return
     }
+    update('skills', [...form.skills, trimmed])
+    setNewSkill('')
+    setDuplicateHint(null)
   }
 
   return (
@@ -1218,15 +1225,18 @@ function EditProfileModal({ data, onSave, onClose }: {
                 </span>
               ))}
             </div>
-            <div className="flex items-center gap-2">
-              <input
-                value={newSkill}
-                onChange={e => setNewSkill(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && addSkill()}
-                placeholder="Add a skill..."
-                className="bg-bg-input border border-border px-3 py-2 text-sm text-text-primary placeholder:text-text-muted outline-none focus:border-brand flex-1"
-              />
-              <Button size="sm" variant="secondary" onClick={addSkill}>Add</Button>
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2">
+                <input
+                  value={newSkill}
+                  onChange={e => { setNewSkill(e.target.value); setDuplicateHint(null) }}
+                  onKeyDown={e => e.key === 'Enter' && addSkill()}
+                  placeholder="Add a skill..."
+                  className="bg-bg-input border border-border px-3 py-2 text-sm text-text-primary placeholder:text-text-muted outline-none focus:border-brand flex-1"
+                />
+                <Button size="sm" variant="secondary" onClick={addSkill}>Add</Button>
+              </div>
+              {duplicateHint && <span className="text-xs text-red-400">{duplicateHint}</span>}
             </div>
           </div>
 

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { RiTimeLine, RiCheckLine, RiVideoLine, RiAlertLine, RiCalendarLine, RiInformationLine, RiCloseLine, RiFileTextLine } from '@remixicon/react'
 import { PageShell } from '@/components/layout/PageShell'
@@ -130,37 +130,45 @@ export default function ApplicationTrackerPage() {
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState<ApplicationStatus>('All')
   const [searchQuery, setSearchQuery] = useState('')
+  const [debouncedQuery, setDebouncedQuery] = useState('')
   const [messages, setMessages] = useState<Message[]>(initialMessages)
   const [readMessages, setReadMessages] = useState<Set<string>>(new Set())
   const [completedActions, setCompletedActions] = useState<Set<string>>(new Set())
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null)
+  const [selectedApp, setSelectedApp] = useState<Application | null>(null)
 
-  // Compute real tab counts
+  // Debounce search query to avoid INP issues
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedQuery(searchQuery), 200)
+    return () => clearTimeout(timer)
+  }, [searchQuery])
+
+  // Filter applications by debounced search query
+  const filteredApplications = useMemo(() => {
+    return mockApplications.filter(app => {
+      if (debouncedQuery) {
+        const q = debouncedQuery.toLowerCase()
+        if (!app.title.toLowerCase().includes(q) && !app.company.toLowerCase().includes(q)) return false
+      }
+      return true
+    })
+  }, [debouncedQuery])
+
+  // Compute tab counts from filtered results
   const tabCounts = useMemo(() => {
     const counts: Record<ApplicationStatus, number> = {
-      'All': mockApplications.length,
+      'All': filteredApplications.length,
       'Matched Job': 0,
       'Introduced': 0,
       'In Interviews': 0,
       'Placed': 0,
       'Rejected': 0,
     }
-    mockApplications.forEach(app => {
+    filteredApplications.forEach(app => {
       if (app.status !== 'All') counts[app.status]++
     })
     return counts
-  }, [])
-
-  // Filter applications by search query
-  const filteredApplications = useMemo(() => {
-    return mockApplications.filter(app => {
-      if (searchQuery) {
-        const q = searchQuery.toLowerCase()
-        if (!app.title.toLowerCase().includes(q) && !app.company.toLowerCase().includes(q)) return false
-      }
-      return true
-    })
-  }, [searchQuery])
+  }, [filteredApplications])
 
   // Filter columns shown based on active tab
   const visibleColumns = activeTab === 'All' ? columns : columns.filter(c => c === activeTab)
@@ -245,7 +253,11 @@ export default function ApplicationTrackerPage() {
                   </div>
                 ) : (
                   colApps.map(app => (
-                    <div key={app.id} className="bg-bg-card p-3 flex flex-col gap-2 border border-border hover:border-brand/30 transition-colors">
+                    <button
+                      key={app.id}
+                      onClick={() => setSelectedApp(app)}
+                      className="bg-bg-card p-3 flex flex-col gap-2 border border-border hover:border-brand/30 transition-colors cursor-pointer text-left w-full"
+                    >
                       <div className="flex items-center gap-2">
                         <Avatar name={app.company} size="sm" />
                         <div className="flex-1 min-w-0">
@@ -257,7 +269,7 @@ export default function ApplicationTrackerPage() {
                         <RiTimeLine size={12} />
                         <span>{app.lastUpdate}</span>
                       </div>
-                    </div>
+                    </button>
                   ))
                 )}
               </motion.div>
@@ -360,6 +372,46 @@ export default function ApplicationTrackerPage() {
             setSelectedMessage(null)
           }}
         />
+      )}
+      {/* Application Detail Slide-over */}
+      {selectedApp && (
+        <div className="fixed inset-0 z-50 flex justify-end" onClick={() => setSelectedApp(null)}>
+          <div className="absolute inset-0 bg-black/60" />
+          <div className="relative w-full max-w-md bg-bg-secondary border-l border-border flex flex-col overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4 border-b border-border">
+              <h2 className="text-lg font-medium text-text-primary">Application Details</h2>
+              <Button variant="ghost" size="icon-sm" onClick={() => setSelectedApp(null)}><RiCloseLine size={18} /></Button>
+            </div>
+            <div className="flex flex-col gap-4 p-4">
+              <div className="flex items-center gap-3">
+                <Avatar name={selectedApp.company} size="lg" />
+                <div>
+                  <h3 className="text-base font-medium text-text-primary">{selectedApp.title}</h3>
+                  <p className="text-sm text-text-secondary">{selectedApp.company}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={cn('text-sm font-medium', statusColors[selectedApp.status])}>{selectedApp.status}</span>
+                <span className="text-xs text-text-muted">&middot; Updated {selectedApp.lastUpdate}</span>
+              </div>
+              <div className="border-t border-border pt-4">
+                <h4 className="text-sm font-medium text-text-primary mb-2">Status Timeline</h4>
+                <div className="flex flex-col gap-3">
+                  {columns.slice(0, columns.indexOf(selectedApp.status) + 1).map((step, i) => (
+                    <div key={step} className="flex items-center gap-2">
+                      <div className={cn('w-2 h-2 rounded-full', step === selectedApp.status ? 'bg-brand' : 'bg-text-muted/40')} />
+                      <span className={cn('text-sm', step === selectedApp.status ? 'text-text-primary font-medium' : 'text-text-muted')}>{step}</span>
+                      {i === columns.indexOf(selectedApp.status) && <span className="text-xs text-text-muted ml-auto">{selectedApp.lastUpdate}</span>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <p className="text-xs text-text-muted mt-4">
+                {statusTooltips[selectedApp.status]}
+              </p>
+            </div>
+          </div>
+        </div>
       )}
     </PageShell>
   )

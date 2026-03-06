@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { RiTimeLine, RiEyeLine, RiBookmarkLine, RiArrowRightSLine, RiChat3Line, RiExternalLinkLine, RiBookOpenLine } from '@remixicon/react'
+import { RiTimeLine, RiEyeLine, RiBookmarkLine, RiArrowRightSLine, RiChat3Line, RiExternalLinkLine, RiBookOpenLine, RiCloseLine } from '@remixicon/react'
 import { PageShell } from '@/components/layout/PageShell'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -171,14 +171,23 @@ export default function JobPlaybookPage() {
   }, [activeCategory, searchQuery])
 
   const categoryCounts = useMemo(() => {
-    const counts: Record<string, number> = { 'All Articles': mockArticles.filter(a => !a.featured).length }
+    // Base set: all non-featured articles matching the search query
+    const searchFiltered = mockArticles.filter(a => {
+      if (a.featured) return false
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase()
+        if (!a.title.toLowerCase().includes(q) && !a.description.toLowerCase().includes(q) && !a.category.toLowerCase().includes(q)) return false
+      }
+      return true
+    })
+    const counts: Record<string, number> = { 'All Articles': searchFiltered.length }
     categories.forEach(cat => {
       if (cat !== 'All Articles') {
-        counts[cat] = mockArticles.filter(a => a.category === cat && !a.featured).length
+        counts[cat] = searchFiltered.filter(a => a.category === cat).length
       }
     })
     return counts
-  }, [])
+  }, [searchQuery])
 
   const categoryTabs = categories.map(cat => ({
     label: `${cat} (${categoryCounts[cat] || 0})`,
@@ -194,8 +203,11 @@ export default function JobPlaybookPage() {
     })
   }
 
-  const openArticle = (url: string) => {
-    window.open(url, '_blank', 'noopener,noreferrer')
+  const [toast, setToast] = useState<string | null>(null)
+
+  const openArticle = (_url: string) => {
+    setToast('Article content coming soon! This is a placeholder link.')
+    setTimeout(() => setToast(null), 3000)
   }
 
   return (
@@ -281,6 +293,16 @@ export default function JobPlaybookPage() {
           </motion.div>
         )}
       </motion.div>
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-bg-card border border-border px-4 py-3 shadow-lg flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4">
+          <RiExternalLinkLine size={16} className="text-brand shrink-0" />
+          <span className="text-sm text-text-primary">{toast}</span>
+          <button onClick={() => setToast(null)} className="text-text-muted hover:text-text-primary cursor-pointer shrink-0">
+            <RiCloseLine size={16} />
+          </button>
+        </div>
+      )}
     </PageShell>
   )
 }

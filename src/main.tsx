@@ -9,8 +9,10 @@ async function enableMocking() {
 }
 
 async function mountToolbar() {
-  const { mountVercelToolbar } = await import('@vercel/toolbar/vite')
-  mountVercelToolbar()
+  if (import.meta.env.DEV) {
+    const { mountVercelToolbar } = await import('@vercel/toolbar/vite')
+    mountVercelToolbar()
+  }
 }
 
 enableMocking().then(() => {
