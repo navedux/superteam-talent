@@ -188,12 +188,7 @@ export default function JobBoardPage() {
                 <div className="flex items-start gap-2.5">
                   <Avatar name={job.company} size="lg" />
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="text-base font-medium text-text-primary truncate">{job.title}</h3>
-                      {job.status && (
-                        <Badge variant={job.status === 'Paid' ? 'brand' : 'outline'}>{job.status}</Badge>
-                      )}
-                    </div>
+                    <h3 className="text-base font-medium text-text-primary truncate">{job.title}</h3>
                     <p className="text-[13px] text-text-secondary">{job.company}</p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">

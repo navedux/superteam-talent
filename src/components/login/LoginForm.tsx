@@ -208,7 +208,7 @@ export function LoginForm() {
           </div>
 
           {/* Login Button — padding 10px, Space Grotesk 18px */}
-          <Button type="submit" size="lg" fullWidth isLoading={isLoading} className="py-2.5">
+          <Button type="submit" size="md" fullWidth isLoading={isLoading}>
             Login
           </Button>
 

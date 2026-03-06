@@ -1,5 +1,4 @@
 import { Avatar } from '@/components/ui/Avatar'
-import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import {
   RiMapPinLine,
@@ -22,12 +21,7 @@ export function JobCard({ job }: JobCardProps) {
         <div className="flex items-center gap-2.5 flex-1 min-w-0">
           <Avatar name={job.company} size="lg" />
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <h4 className="text-[13px] font-medium text-text-primary truncate">{job.title}</h4>
-              {job.status && (
-                <Badge variant={job.status === 'Paid' ? 'brand' : 'outline'}>{job.status === 'Paid' ? 'Hot' : job.status}</Badge>
-              )}
-            </div>
+            <h4 className="text-[13px] font-medium text-text-primary truncate">{job.title}</h4>
             <p className="text-[13px] text-text-secondary">{job.company}</p>
           </div>
         </div>
